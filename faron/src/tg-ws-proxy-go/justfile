@@ -1,0 +1,30 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+bin := "tg-ws-proxy"
+
+# list recipes
+default:
+	@just --list
+
+# build the proxy binary
+build:
+	go build -o {{bin}} ./cmd/tg-ws-proxy
+
+# run tests
+test:
+	go test ./...
+
+# vet the code
+vet:
+	go vet ./...
+
+# format all sources
+fmt:
+	gofmt -l -w cmd internal
+
+# build, vet and test
+check: vet test build
+
+# clean build artifacts
+clean:
+	rm -f {{bin}}

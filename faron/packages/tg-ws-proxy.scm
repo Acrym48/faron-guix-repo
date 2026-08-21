@@ -8,15 +8,20 @@
   #:use-module (gnu packages golang-web)
   #:export (tg-ws-proxy-go))
 
+;; Исходник лежит внутри самого канала: faron/src/tg-ws-proxy-go
+;; относительно этого модуля (faron/packages/).
+(define %source-dir
+  (string-append (dirname (current-filename))
+                  "/../src/tg-ws-proxy-go"))
+
 (define-public tg-ws-proxy-go
   (package
     (name "tg-ws-proxy-go")
     (version "0.1.0")
-    (source (local-file "/home/faron/projects/tg-ws-proxy-go"
+    (source (local-file %source-dir
                         "tg-ws-proxy-go-src"
                         #:recursive? #t
-                        #:select? (git-predicate
-                                   "/home/faron/projects/tg-ws-proxy-go")))
+                        #:select? (git-predicate %source-dir)))
     (build-system go-build-system)
     (arguments
      (list
