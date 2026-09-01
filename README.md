@@ -1,4 +1,4 @@
-# faron — локальный канал Guix
+# faron — мой канал пакетов Guix
 
 Локальный Guix-канал с определениями пакетов и собственными программами.
 Канал подключён в `~/.config/guix/channels.scm` (и в `/root/.config/guix/channels.scm`)
