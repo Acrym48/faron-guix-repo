@@ -13,6 +13,7 @@
   #:use-module (gnu packages kde-frameworks)
   #:use-module (gnu packages man)
   #:use-module (gnu packages qt)
+  #:use-module (faron packages java-runtimes)
   #:export (polymc))
 
 (define-public polymc
@@ -42,13 +43,18 @@
       #:configure-flags
       #~(list "-DLauncher_APP_BINARY_NAME=polymc"
               "-DLauncher_QT_VERSION_MAJOR=6")
-      #:phases
+#:phases
       #~(modify-phases %standard-phases
           (add-after 'install 'qt-wrap
             (lambda* (#:key inputs outputs #:allow-other-keys)
               (wrap-all-qt-programs #:inputs inputs
                                     #:outputs outputs
-                                    #:qtbase #$qtbase))))))
+                                    #:qtbase #$qtbase)
+              ;; Expose the bundled JDK runtimes on PATH so that PolyMC can
+              ;; locate a suitable Java for any Minecraft version.
+              (wrap-program (string-append #$output "/bin/polymc")
+                            `("PATH" ":" prefix
+                              (,(string-append #$java-runtimes "/bin")))))))))
     (native-inputs
      (list extra-cmake-modules scdoc (list openjdk21 "jdk")))
     (inputs
@@ -65,7 +71,7 @@
            openal
            mesa
            hicolor-icon-theme
-           openjdk21))
+           java-runtimes))
     (home-page "https://github.com/PolyMC/PolyMC")
     (synopsis "Free, open source launcher for Minecraft")
     (description
