@@ -34,9 +34,21 @@
     (build-system cmake-build-system)
     (arguments
      (list
+      #:modules '((guix build cmake-build-system)
+                  (guix build qt-utils)
+                  (guix build utils))
+      #:imported-modules `(,@%cmake-build-system-modules
+                           (guix build qt-utils))
       #:configure-flags
       #~(list "-DLauncher_APP_BINARY_NAME=polymc"
-              "-DLauncher_QT_VERSION_MAJOR=6")))
+              "-DLauncher_QT_VERSION_MAJOR=6")
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'install 'qt-wrap
+            (lambda* (#:key inputs outputs #:allow-other-keys)
+              (wrap-all-qt-programs #:inputs inputs
+                                    #:outputs outputs
+                                    #:qtbase #$qtbase))))))
     (native-inputs
      (list extra-cmake-modules scdoc (list openjdk21 "jdk")))
     (inputs
@@ -45,6 +57,7 @@
            qtsvg
            qtimageformats
            qtcharts
+           qtwayland
            quazip
            tomlplusplus
            zlib
