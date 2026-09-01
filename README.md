@@ -1,6 +1,6 @@
 # faron — мой канал пакетов Guix
 
-Локальный Guix-канал с определениями пакетов и собственными программами.
+Мой канал пакетов Guix с определениями пакетов и собственными программами.
 Канал подключён в `~/.config/guix/channels.scm` (и в `/root/.config/guix/channels.scm`)
 и обновляется через `sudo guix pull --disable-authentication`.
 
