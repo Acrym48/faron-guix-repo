@@ -1,44 +1,55 @@
 # faron
 
-Мой личный Guix-канал с определениями пакетов и собственными программами.
+A Guix channel providing packages missing from the official GNU Guix, along
+with personal projects.
 
-## Подключение
+## Packages
 
-Канал подключён в `~/.config/guix/channels.scm` (и в `/root/.config/guix/channels.scm`).
-Обновление:
+| Package | Description | Source |
+|---------|-------------|-------|
+| `polymc` | Open-source Minecraft launcher with instance management (Qt6 build) | [PolyMC/PolyMC](https://github.com/PolyMC/PolyMC) |
+| `opencode` | Open-source AI coding agent for the terminal | [opencode.ai](https://opencode.ai) |
+| `yazi` | Blazing-fast terminal file manager | [sxyazi/yazi](https://github.com/sxyazi/yazi) |
+| `tg-ws-proxy-go` | Local MTProto WebSocket proxy for Telegram Desktop | in-tree ([`faron/src/tg-ws-proxy-go`](faron/src/tg-ws-proxy-go)) |
+
+Packages built from source reuse the system Guix libraries. Prebuilt
+binaries (`opencode`, `yazi`) are patched with `patchelf` to the glibc
+interpreter from the Guix store.
+
+## Installation
+
+Add the channel to `~/.config/guix/channels.scm`:
+
+```scheme
+(cons (channel
+        (name 'faron)
+        (url "https://github.com/<you>/<repo>"))
+      %default-channels)
+```
+
+Update the channel and build or install a package:
 
 ```bash
-sudo guix pull --disable-authentication
+guix pull
+guix install polymc
+# or only build it without installing:
+guix build polymc
 ```
 
-## Структура
+## Using a package in a system / home config
 
-```
-faron/
-  .guix-channel          # метаданные канала
-  faron/packages/        # определения пакетов (один файл — один модуль)
-  faron/src/             # исходники собственных программ
-```
+Import the module in your `config.scm` or `home-config.scm` `use-modules`
+and reference the package by name:
 
-## Добавление пакета
+```scheme
+(use-modules (faron packages polymc))
 
-1. Создай `faron/packages/<имя>.scm` с модулем `(faron packages <имя>)`.
-2. Закоммить:
-   ```bash
-   cd /home/faron/guix-channels/faron
-   git add -A && git commit -m "add <имя>"
-   ```
-3. Обнови канал и собери:
-   ```bash
-   sudo guix pull --disable-authentication
-   guix build <имя>
-   ```
-
-## Установка
-
-```bash
-guix install <имя>
+(home-environment
+  (packages (list polymc)))
 ```
 
-Для использования в system/home-конфиге добавь `(faron packages <имя>)`
-в `use-modules` и ссылайся на пакет по имени.
+## License
+
+Unless otherwise noted, the channel code is free software licensed under the
+GPL-3.0-or-later license. See the `faron/src/tg-ws-proxy-go` directory for
+the licensing of the bundled `tg-ws-proxy-go` project.
