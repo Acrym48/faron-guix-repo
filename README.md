@@ -23,7 +23,7 @@ Add the channel to `~/.config/guix/channels.scm`:
 ```scheme
 (cons (channel
         (name 'faron)
-        (url "https://github.com/<you>/<repo>"))
+        (url "https://github.com/Acrym48/faron-guix-repo"))
       %default-channels)
 ```
 
