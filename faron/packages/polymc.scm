@@ -50,11 +50,20 @@
               (wrap-all-qt-programs #:inputs inputs
                                     #:outputs outputs
                                     #:qtbase #$qtbase)
-              ;; Expose the bundled JDK runtimes on PATH so that PolyMC can
-              ;; locate a suitable Java for any Minecraft version.
-              (wrap-program (string-append #$output "/bin/polymc")
-                            `("PATH" ":" prefix
-                              (,(string-append #$java-runtimes "/bin")))))))))
+              ;; Expose the bundled JDK runtimes on PATH and to PolyMC's Java
+              ;; auto-detection so that it can locate a suitable Java for any
+              ;; Minecraft version.  PATH only provides bare "java-X" names;
+              ;; POLYMC_JAVA_PATHS feeds the exact java binaries to
+              ;; JavaUtils::FindJavaPaths() so versions 17/21/25 are listed in
+              ;; the launcher's Java settings.
+              (let ((jvm (string-append #$java-runtimes "/_jvm")))
+                (wrap-program (string-append #$output "/bin/polymc")
+                              `("PATH" ":" prefix
+                                (,(string-append #$java-runtimes "/bin")))
+                              `("POLYMC_JAVA_PATHS" ":" prefix
+                                (,(string-append jvm "/17/bin/java")
+                                 ,(string-append jvm "/21/bin/java")
+                                 ,(string-append jvm "/25/bin/java")))))))))))
     (native-inputs
      (list extra-cmake-modules scdoc (list openjdk21 "jdk")))
     (inputs
