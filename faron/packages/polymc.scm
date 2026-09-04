@@ -63,7 +63,7 @@
                               `("POLYMC_JAVA_PATHS" ":" prefix
                                 (,(string-append jvm "/17/bin/java")
                                  ,(string-append jvm "/21/bin/java")
-                                 ,(string-append jvm "/25/bin/java")))))))))))
+                                 ,(string-append jvm "/25/bin/java"))))))))))
     (native-inputs
      (list extra-cmake-modules scdoc (list openjdk21 "jdk")))
     (inputs
