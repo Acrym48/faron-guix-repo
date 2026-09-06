@@ -106,9 +106,7 @@ write code in your terminal, IDE, or desktop.")
                 (invoke "patchelf"
                         "--set-interpreter"
                         #$(file-append glibc "/lib/ld-linux-x86-64.so.2")
-                        "--set-rpath"
-#$(file-append glibc "/lib")
-                         claude-file)))))))
+                        claude-file)))))))
     (synopsis "AI coding assistant for the terminal")
     (description
      "Claude Code is Anthropic's AI coding assistant for the terminal.  It can
@@ -150,12 +148,10 @@ read and edit your code, run commands, and delegate subtasks to subagents.")
                 (mkdir-p bin)
                 (copy-file "antigravity" agy-file)
                 (chmod agy-file #o755)
-                (invoke "patchelf"
+(invoke "patchelf"
                         "--set-interpreter"
                         #$(file-append glibc "/lib/ld-linux-x86-64.so.2")
-                        "--set-rpath"
-#$(file-append glibc "/lib")
-                         agy-file)))))))
+                        agy-file)))))))
     (synopsis "AI coding agent for the terminal from Google")
     (description
      "Antigravity is an AI coding agent from Google that helps you build,
