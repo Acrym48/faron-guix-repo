@@ -12,13 +12,11 @@
   (package
     (name "tg-ws-proxy-go")
     (version "0.1.0")
-    ;; Исходник внутри самого канала: faron/src/tg-ws-proxy-go,
-    ;; относительно этого модуля (faron/packages/).  Литеральный
-    ;; относительный путь резолвится через current-source-directory,
-    ;; что корректно работает в скомпилированном модуле канала.
-    (source (local-file "../src/tg-ws-proxy-go"
-                        "tg-ws-proxy-go-src"
-                        #:recursive? #t))
+    (source
+     (git-fetch
+      (url "https://github.com/Acrym48/tg-ws-proxy-go")
+      (commit "1afa1a95511af02fdca746d93721e43841edcc33"))
+     (file-name (git-file-name name version)))
     (build-system go-build-system)
     (arguments
      (list
@@ -33,7 +31,7 @@
                       "-trimpath"
                       (string-append import-path "/cmd/tg-ws-proxy")))))))
     (inputs (list go-github-com-gorilla-websocket))
-    (home-page "https://github.com/tg-ws-proxy-go")
+    (home-page "https://github.com/Acrym48/tg-ws-proxy-go")
     (synopsis "Local MTProto WebSocket proxy for Telegram Desktop")
     (description
      "Local MTProto proxy bridging Telegram Desktop traffic over WebSocket.")

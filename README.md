@@ -13,7 +13,7 @@ with personal projects.
 | `antigravity` | AI coding agent for the terminal from Google (installed as `agy`) | [antigravity.google](https://antigravity.google) |
 | `qwen-code` | Open-source AI coding agent for the terminal | [github.com/QwenLM/qwen-code](https://github.com/QwenLM/qwen-code) |
 | `yazi` | Blazing-fast terminal file manager | [sxyazi/yazi](https://github.com/sxyazi/yazi) |
-| `tg-ws-proxy-go` | Local MTProto WebSocket proxy for Telegram Desktop | in-tree ([`faron/src/tg-ws-proxy-go`](faron/src/tg-ws-proxy-go)) |
+| `tg-ws-proxy-go` | Local MTProto WebSocket proxy for Telegram Desktop | [Acrym48/tg-ws-proxy-go](https://github.com/Acrym48/tg-ws-proxy-go) |
 
 Packages built from source reuse the system Guix libraries. Prebuilt
 binaries (`opencode`, `yazi`, `claude-code`, `antigravity`, `qwen-code`) are
@@ -54,5 +54,7 @@ and reference the package by name:
 ## License
 
 Unless otherwise noted, the channel code is free software licensed under the
-GPL-3.0-or-later license. See the `faron/src/tg-ws-proxy-go` directory for
-the licensing of the bundled `tg-ws-proxy-go` project.
+GPL-3.0-or-later license. The `tg-ws-proxy-go` package is built from
+[Acrym48/tg-ws-proxy-go](https://github.com/Acrym48/tg-ws-proxy-go), which is
+also licensed under the GPL-3.0-or-later license (see its `LICENSE` /
+`NOTICE`).
