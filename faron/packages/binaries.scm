@@ -3,69 +3,11 @@
   #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
-  #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (gnu packages bash)
   #:use-module (gnu packages elf)
   #:use-module (gnu packages gcc)
-  #:use-module (gnu packages compression)
   #:use-module (gnu packages base)
-  #:export (opencode yazi))
-
-;; Prebuilt glibc binary from GitHub Releases; ELF interpreter is patched to
-;; the glibc loader from the Guix store ('-baseline' build). libgcc_s.so.1 is
-;; shipped in lib/ and provided via LD_LIBRARY_PATH in the wrapper.
-(define-public opencode
-  (package
-    (name "opencode")
-    (version "1.18.29")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append
-             "https://github.com/anomalyco/opencode/releases/download/v"
-             version "/opencode-linux-x64-baseline.tar.gz"))
-       (sha256
-        (base32 "0b84gxaspjlidmd6lkgmxjkcamlz73mki9y3wkipfd72cgqg58q3"))))
-    (build-system gnu-build-system)
-    (native-inputs (list patchelf))
-    (inputs (list bash glibc (list gcc-14 "lib")))
-    (arguments
-     (list
-      #:phases
-      #~(modify-phases %standard-phases
-          (delete 'configure)
-          (delete 'build)
-          (delete 'check)
-          (delete 'validate-runpath)
-          (delete 'strip)
-          (replace 'install
-            (lambda _
-              (let* ((libexec (string-append #$output "/libexec"))
-                     (lib (string-append #$output "/lib"))
-                     (bin (string-append #$output "/bin"))
-                     (real (string-append libexec "/opencode"))
-                     (libgcc (search-input-file %build-inputs
-                                                "lib/libgcc_s.so.1")))
-                (mkdir-p libexec)
-                (mkdir-p lib)
-                (install-file "opencode" libexec)
-                (chmod real #o755)
-                (invoke "patchelf"
-                        "--set-interpreter"
-                        #$(file-append glibc "/lib/ld-linux-x86-64.so.2")
-                        real)
-                (install-file libgcc lib)
-                (wrap-program real
-                              #:sh #$(file-append bash "/bin/sh")
-                              `("LD_LIBRARY_PATH" ":" prefix (,lib)))
-                (mkdir-p bin)
-                (symlink real (string-append bin "/opencode"))))))))
-    (synopsis "Open source AI coding agent for the terminal")
-    (description "opencode is an open source AI coding agent that helps you
-write code in your terminal, IDE, or desktop.")
-    (home-page "https://opencode.ai")
-    (license license:expat)))
+  #:export (yazi))
 
 ;; Prebuilt Rust binary from GitHub Releases; glibc interpreter and rpath are
 ;; set to find libc and libgcc_s.so.1 from the Guix store.

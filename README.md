@@ -9,12 +9,15 @@ with personal projects.
 |---------|-------------|-------|
 | `polymc` | Open-source Minecraft launcher with instance management (Qt6 build) | [PolyMC/PolyMC](https://github.com/PolyMC/PolyMC) |
 | `opencode` | Open-source AI coding agent for the terminal | [opencode.ai](https://opencode.ai) |
+| `claude-code` | Anthropic's AI coding assistant for the terminal | [code.claude.com](https://code.claude.com) |
+| `antigravity` | AI coding agent for the terminal from Google (installed as `agy`) | [antigravity.google](https://antigravity.google) |
+| `qwen-code` | Open-source AI coding agent for the terminal | [github.com/QwenLM/qwen-code](https://github.com/QwenLM/qwen-code) |
 | `yazi` | Blazing-fast terminal file manager | [sxyazi/yazi](https://github.com/sxyazi/yazi) |
 | `tg-ws-proxy-go` | Local MTProto WebSocket proxy for Telegram Desktop | in-tree ([`faron/src/tg-ws-proxy-go`](faron/src/tg-ws-proxy-go)) |
 
 Packages built from source reuse the system Guix libraries. Prebuilt
-binaries (`opencode`, `yazi`) are patched with `patchelf` to the glibc
-interpreter from the Guix store.
+binaries (`opencode`, `yazi`, `claude-code`, `antigravity`, `qwen-code`) are
+patched with `patchelf` to the glibc interpreter from the Guix store.
 
 ## Installation
 
