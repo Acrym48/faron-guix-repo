@@ -6,6 +6,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages elf)
   #:use-module (gnu packages gcc)
+  #:use-module (gnu packages compression)
   #:use-module (gnu packages base)
   #:export (yazi))
 
