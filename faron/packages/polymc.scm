@@ -13,6 +13,7 @@
   #:use-module (gnu packages kde-frameworks)
   #:use-module (gnu packages man)
   #:use-module (gnu packages qt)
+  #:use-module (gnu packages xorg)
   #:use-module (faron packages java-runtimes)
   #:export (polymc))
 
@@ -63,7 +64,19 @@
                               `("POLYMC_JAVA_PATHS" ":" prefix
                                 (,(string-append jvm "/17/bin/java")
                                  ,(string-append jvm "/21/bin/java")
-                                 ,(string-append jvm "/25/bin/java"))))))))))
+                                 ,(string-append jvm "/25/bin/java")))
+                              ;; LWJGL inside the child Minecraft JVM loads
+                              ;; libGL/libX11 & co. via dlopen, which under
+                              ;; Guix can't be found without LD_LIBRARY_PATH.
+                              `("LD_LIBRARY_PATH" ":" prefix
+                                (,(string-append #$mesa "/lib")
+                                 ,(string-append #$libx11 "/lib")
+                                 ,(string-append #$libxcursor "/lib")
+                                 ,(string-append #$libxrandr "/lib")
+                                 ,(string-append #$libxinerama "/lib")
+                                 ,(string-append #$libxxf86vm "/lib")
+                                 ,(string-append #$libxi "/lib")
+                                 ,(string-append #$libxext "/lib"))))))))))
     (native-inputs
      (list extra-cmake-modules scdoc (list openjdk21 "jdk")))
     (inputs
@@ -79,6 +92,13 @@
            glfw
            openal
            mesa
+           libx11
+           libxcursor
+           libxrandr
+           libxinerama
+           libxxf86vm
+           libxi
+           libxext
            hicolor-icon-theme
            java-runtimes))
     (home-page "https://github.com/PolyMC/PolyMC")
