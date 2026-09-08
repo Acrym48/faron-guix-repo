@@ -20,11 +20,11 @@
              (commit "1afa1a95511af02fdca746d93721e43841edcc33")))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0n9cvlsvbr55yhyjl9l00bcr0nci819w2i1i0spmvl8fy2vz7kgy"))))
+        (base32 "1fn73jw0cmfr98pzl0cgxf712n19kzmm2qj7mx5wm9v0yw8ml3b0"))))
     (build-system go-build-system)
     (arguments
      (list
-      #:import-path "tg-ws-proxy-go"
+      #:import-path "github.com/Acrym48/tg-ws-proxy-go"
       #:install-source? #f
       #:phases
       #~(modify-phases %standard-phases
