@@ -17,7 +17,9 @@ with personal projects.
 
 Packages built from source reuse the system Guix libraries. Prebuilt
 binaries (`opencode`, `yazi`, `claude-code`, `antigravity`, `qwen-code`) are
-patched with `patchelf` to the glibc interpreter from the Guix store.
+patched with `patchelf` to the glibc interpreter from the Guix store.  These
+prebuilt binary packages ship both `x86_64-linux` and `aarch64-linux`
+artifacts and pull the matching one for the build system.
 
 ## Installation
 

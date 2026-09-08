@@ -3,6 +3,7 @@
   #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
+  #:use-module (guix utils)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages elf)
@@ -10,21 +11,33 @@
   #:use-module (gnu packages base)
   #:export (opencode claude-code antigravity qwen-code))
 
+(define (aarch64-build?)
+  (string-prefix? "aarch64"
+                  (or (%current-target-system) (%current-system))))
+
 ;; Prebuilt glibc binary from GitHub Releases; ELF interpreter is patched to
-;; the glibc loader from the Guix store ('-baseline' build). libgcc_s.so.1 is
-;; shipped in lib/ and provided via LD_LIBRARY_PATH in the wrapper.
+;; the glibc loader from the Guix store ('-baseline' on x86_64).  libgcc_s.so.1
+;; is shipped in lib/ and provided via LD_LIBRARY_PATH in the wrapper.
 (define-public opencode
   (package
     (name "opencode")
     (version "1.18.29")
     (source
-     (origin
-       (method url-fetch)
-       (uri (string-append
-             "https://github.com/anomalyco/opencode/releases/download/v"
-             version "/opencode-linux-x64-baseline.tar.gz"))
-       (sha256
-        (base32 "0b84gxaspjlidmd6lkgmxjkcamlz73mki9y3wkipfd72cgqg58q3"))))
+     (if (aarch64-build?)
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://github.com/anomalyco/opencode/releases/download/v"
+                 version "/opencode-linux-arm64.tar.gz"))
+           (sha256
+            (base32 "1h6kxsi2mjzgshcljziv9wcwxslhqcq6a0i4i6kfg92w75lzgfkh")))
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://github.com/anomalyco/opencode/releases/download/v"
+                 version "/opencode-linux-x64-baseline.tar.gz"))
+           (sha256
+            (base32 "0b84gxaspjlidmd6lkgmxjkcamlz73mki9y3wkipfd72cgqg58q3")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list bash glibc (list gcc-14 "lib")))
@@ -51,7 +64,11 @@
                 (chmod real #o755)
                 (invoke "patchelf"
                         "--set-interpreter"
-                        #$(file-append glibc "/lib/ld-linux-x86-64.so.2")
+                        #$(if (aarch64-build?)
+                              (file-append glibc
+                                           "/lib/ld-linux-aarch64.so.1")
+                              (file-append glibc
+                                           "/lib/ld-linux-x86-64.so.2"))
                         real)
                 (install-file libgcc lib)
                 (wrap-program real
@@ -73,14 +90,23 @@ write code in your terminal, IDE, or desktop.")
     (name "claude-code")
     (version "2.1.263")
     (source
-     (origin
-       (method url-fetch)
-       (uri (string-append
-             "https://downloads.claude.ai/claude-code-releases/"
-             version "/linux-x64/claude"))
-       (file-name (string-append "claude-" version))
-       (sha256
-        (base32 "1fnmh4diar2d6r1fbl5i3c6dzjdl8g7czwwhcw0g84l13qsj1l16"))))
+     (if (aarch64-build?)
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://downloads.claude.ai/claude-code-releases/"
+                 version "/linux-arm64/claude"))
+           (file-name (string-append "claude-" version))
+           (sha256
+            (base32 "00sc5f8c5r7yav6inxmp3z9ry5vlyqbyir6sqyf00vkcmv4df9bx")))
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://downloads.claude.ai/claude-code-releases/"
+                 version "/linux-x64/claude"))
+           (file-name (string-append "claude-" version))
+           (sha256
+            (base32 "1fnmh4diar2d6r1fbl5i3c6dzjdl8g7czwwhcw0g84l13qsj1l16")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list glibc))
@@ -105,7 +131,11 @@ write code in your terminal, IDE, or desktop.")
                 (chmod claude-file #o755)
                 (invoke "patchelf"
                         "--set-interpreter"
-                        #$(file-append glibc "/lib/ld-linux-x86-64.so.2")
+                        #$(if (aarch64-build?)
+                              (file-append glibc
+                                           "/lib/ld-linux-aarch64.so.1")
+                              (file-append glibc
+                                           "/lib/ld-linux-x86-64.so.2"))
                         claude-file)))))))
     (synopsis "AI coding assistant for the terminal")
     (description
@@ -121,13 +151,21 @@ read and edit your code, run commands, and delegate subtasks to subagents.")
     (name "antigravity")
     (version "1.1.27")
     (source
-     (origin
-       (method url-fetch)
-       (uri (string-append
-             "https://storage.googleapis.com/antigravity-public/antigravity-cli/"
-             version "-5211191891591168/linux-x64/cli_linux_x64.tar.gz"))
-       (sha256
-        (base32 "1gi0kbykgs4jcrp79zfv9bkbdz2nnrgz507mc3v2sg57p3vd8x7q"))))
+     (if (aarch64-build?)
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://github.com/google-antigravity/antigravity-cli/"
+                 "releases/download/" version "/agy_cli_linux_arm64.tar.gz"))
+           (sha256
+            (base32 "153axdyc2ihjj63c9gik9ni275ic6rpaxr6b0b6hcx06lvjrzz4p")))
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://storage.googleapis.com/antigravity-public/antigravity-cli/"
+                 version "-5211191891591168/linux-x64/cli_linux_x64.tar.gz"))
+           (sha256
+            (base32 "1gi0kbykgs4jcrp79zfv9bkbdz2nnrgz507mc3v2sg57p3vd8x7q")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list glibc))
@@ -150,7 +188,11 @@ read and edit your code, run commands, and delegate subtasks to subagents.")
                 (chmod agy-file #o755)
 (invoke "patchelf"
                         "--set-interpreter"
-                        #$(file-append glibc "/lib/ld-linux-x86-64.so.2")
+                        #$(if (aarch64-build?)
+                              (file-append glibc
+                                           "/lib/ld-linux-aarch64.so.1")
+                              (file-append glibc
+                                           "/lib/ld-linux-x86-64.so.2"))
                         agy-file)))))))
     (synopsis "AI coding agent for the terminal from Google")
     (description
@@ -168,13 +210,21 @@ debug, and ship code from the terminal.")
     (name "qwen-code")
     (version "0.23.0")
     (source
-     (origin
-       (method url-fetch)
-       (uri (string-append
-             "https://github.com/QwenLM/qwen-code/releases/download/v"
-             version "/qwen-code-linux-x64.tar.gz"))
-       (sha256
-        (base32 "1g859dkq5qakrdrixcmrhfqfx8kj7br4c2yxqqs0iahxgqigf86s"))))
+     (if (aarch64-build?)
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://github.com/QwenLM/qwen-code/releases/download/v"
+                 version "/qwen-code-linux-arm64.tar.gz"))
+           (sha256
+            (base32 "136wjxv3hflnnxrbmcvjviyppn9px7j82hb2l6jr07jkz0sg9y7n")))
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://github.com/QwenLM/qwen-code/releases/download/v"
+                 version "/qwen-code-linux-x64.tar.gz"))
+           (sha256
+            (base32 "1g859dkq5qakrdrixcmrhfqfx8kj7br4c2yxqqs0iahxgqigf86s")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list glibc (list gcc-14 "lib")))
@@ -201,7 +251,11 @@ debug, and ship code from the terminal.")
                 (copy-recursively "qwen-code" lib)
                 (invoke "patchelf"
                         "--set-interpreter"
-                        #$(file-append glibc "/lib/ld-linux-x86-64.so.2")
+                        #$(if (aarch64-build?)
+                              (file-append glibc
+                                           "/lib/ld-linux-aarch64.so.1")
+                              (file-append glibc
+                                           "/lib/ld-linux-x86-64.so.2"))
                         node)
                 (mkdir-p bin)
                 (call-with-output-file (string-append bin "/qwen")

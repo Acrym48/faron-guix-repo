@@ -3,12 +3,17 @@
   #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
+  #:use-module (guix utils)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages elf)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages base)
   #:export (yazi))
+
+(define (aarch64-build?)
+  (string-prefix? "aarch64"
+                  (or (%current-target-system) (%current-system))))
 
 ;; Prebuilt Rust binary from GitHub Releases; glibc interpreter and rpath are
 ;; set to find libc and libgcc_s.so.1 from the Guix store.
@@ -17,13 +22,21 @@
     (name "yazi")
     (version "26.9.1")
     (source
-     (origin
-       (method url-fetch)
-       (uri (string-append
-             "https://github.com/sxyazi/yazi/releases/download/v"
-             version "/yazi-x86_64-unknown-linux-gnu.zip"))
-       (sha256
-        (base32 "1lka1ba8is18ff9gdv4q9qm8fmh823qi1w41qr440a846cfyjbx0"))))
+     (if (aarch64-build?)
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://github.com/sxyazi/yazi/releases/download/v"
+                 version "/yazi-aarch64-unknown-linux-gnu.zip"))
+           (sha256
+            (base32 "0fhb6xdkhhai2lx2pc9vlbbran9zv1cy590nfmdvd2dmsq47z002")))
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://github.com/sxyazi/yazi/releases/download/v"
+                 version "/yazi-x86_64-unknown-linux-gnu.zip"))
+           (sha256
+            (base32 "1lka1ba8is18ff9gdv4q9qm8fmh823qi1w41qr440a846cfyjbx0")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf unzip))
     (inputs (list glibc (list gcc-14 "lib")))
@@ -53,7 +66,11 @@
                  (lambda (prog)
                    (invoke "patchelf"
                            "--set-interpreter"
-                           #$(file-append glibc "/lib/ld-linux-x86-64.so.2")
+                           #$(if (aarch64-build?)
+                                 (file-append glibc
+                                              "/lib/ld-linux-aarch64.so.1")
+                                 (file-append glibc
+                                              "/lib/ld-linux-x86-64.so.2"))
                            "--set-rpath"
                            (string-append
                             #$(file-append glibc "/lib")
