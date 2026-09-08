@@ -9,7 +9,7 @@
   #:use-module (gnu packages elf)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages base)
-  #:export (opencode claude-code antigravity qwen-code))
+  #:export (opencode claude-code antigravity qwen-code kimi-code))
 
 (define (aarch64-build?)
   (string-prefix? "aarch64"
@@ -272,3 +272,72 @@ debug, and ship code from the terminal.")
 with agentic features like auto-memory, skills, subagents and MCP support.")
     (home-page "https://qwenlm.github.io/qwen-code-docs")
     (license license:asl2.0)))
+
+;; Prebuilt native binary from Moonshot AI's release server (SEA bundle, needs
+;; libstdc++.so.6 at runtime). The installer fetches the version from /latest
+;; and the file from /binaries/<version>/manifest.json; we pin the version and
+;; patch the ELF interpreter to the Guix glibc loader.
+(define-public kimi-code
+  (package
+    (name "kimi-code")
+    (version "0.41.0")
+    (source
+     (if (aarch64-build?)
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://code.kimi.com/kimi-code/binaries/"
+                 version "/kimi-code-linux-arm64"))
+           (file-name (string-append "kimi-code-" version))
+           (sha256
+            (base32 "1650lig4l5a5lpdzw8g8wsq5s7sq9xajq10ibyly6kb9ywg9na1m")))
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://code.kimi.com/kimi-code/binaries/"
+                 version "/kimi-code-linux-x64"))
+           (file-name (string-append "kimi-code-" version))
+           (sha256
+            (base32 "0iwip37vq5dv2k41cfq4nq6z3mlhnmz4lgza8g5r4dzx44xshcah")))))
+    (build-system gnu-build-system)
+    (native-inputs (list patchelf))
+    (inputs (list glibc (list gcc-14 "lib")))
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (delete 'build)
+          (delete 'check)
+          (delete 'validate-runpath)
+          (delete 'strip)
+          (delete 'make-dynamic-linker-cache)
+          (replace 'install
+            (lambda _
+              (let* ((bin (string-append #$output "/bin"))
+                     (kimi-file (string-append bin "/kimi-code"))
+                     (src (assoc-ref %build-inputs "source")))
+                (mkdir-p bin)
+                (copy-file src kimi-file)
+                (chmod kimi-file #o755)
+                (invoke "patchelf"
+                        "--set-interpreter"
+                        #$(if (aarch64-build?)
+                              (file-append glibc
+                                           "/lib/ld-linux-aarch64.so.1")
+                              (file-append glibc
+                                           "/lib/ld-linux-x86-64.so.2"))
+                        kimi-file)
+                (wrap-program kimi-file
+                              #:sh #$(file-append bash "/bin/sh")
+                              `("LD_LIBRARY_PATH" ":" prefix
+                                (,(dirname
+                                   (search-input-file
+                                    %build-inputs
+                                    "lib/libstdc++.so.6")))))))))))
+    (synopsis "AI coding agent for the terminal from Moonshot AI")
+    (description
+     "Kimi Code is a coding agent from Moonshot AI that helps you write code
+ from the terminal, built as a native single-executable bundle.")
+    (home-page "https://kimi.com")
+    (license (license:non-copyleft "https://kimi.com"))))
