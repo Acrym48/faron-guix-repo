@@ -14,8 +14,13 @@ with personal projects.
 | `qwen-code` | Open-source AI coding agent for the terminal | [github.com/QwenLM/qwen-code](https://github.com/QwenLM/qwen-code) |
 | `yazi` | Blazing-fast terminal file manager | [sxyazi/yazi](https://github.com/sxyazi/yazi) |
 | `tg-ws-proxy-go` | Local MTProto WebSocket proxy for Telegram Desktop | [Acrym48/tg-ws-proxy-go](https://github.com/Acrym48/tg-ws-proxy-go) |
+| `glow` | Render Markdown on the CLI, with pretty syntax highlighting | [charmbracelet/glow](https://github.com/charmbracelet/glow) |
 
-Packages built from source reuse the system Guix libraries. Prebuilt
+Packages built from source reuse the system Guix libraries. The `glow`
+package is built from the [charm.land/glow/v3](https://github.com/charmbracelet/glow)
+source and brings its own Go dependency stack (`charm.land/v2` modules plus
+fresh `x/ansi`, `x/term`, `x/windows`, `x/cellbuf` versions that are not yet
+in GNU Guix).  Prebuilt
 binaries (`opencode`, `yazi`, `claude-code`, `antigravity`, `qwen-code`) are
 patched with `patchelf` to the glibc interpreter from the Guix store.  These
 prebuilt binary packages ship both `x86_64-linux` and `aarch64-linux`
@@ -39,6 +44,7 @@ guix pull
 guix install polymc
 # or only build it without installing:
 guix build polymc
+glow --help
 ```
 
 ## Using a package in a system / home config
@@ -47,10 +53,11 @@ Import the module in your `config.scm` or `home-config.scm` `use-modules`
 and reference the package by name:
 
 ```scheme
-(use-modules (faron packages polymc))
+(use-modules (faron packages polymc)      ; system
+             (faron packages glow))       ; terminal
 
 (home-environment
-  (packages (list polymc)))
+  (packages (list polymc glow)))
 ```
 
 ## License
