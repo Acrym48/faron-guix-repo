@@ -208,7 +208,7 @@ debug, and ship code from the terminal.")
 (define-public qwen-code
   (package
     (name "qwen-code")
-    (version "0.23.0")
+    (version "0.23.2")
     (source
      (if (aarch64-build?)
          (origin
@@ -217,14 +217,14 @@ debug, and ship code from the terminal.")
                  "https://github.com/QwenLM/qwen-code/releases/download/v"
                  version "/qwen-code-linux-arm64.tar.gz"))
            (sha256
-            (base32 "136wjxv3hflnnxrbmcvjviyppn9px7j82hb2l6jr07jkz0sg9y7n")))
+            (base32 "0ayimxrywy22x68j3y1394jymrc7bpa9wrl91shz0hpvykgzbppn")))
          (origin
            (method url-fetch)
            (uri (string-append
                  "https://github.com/QwenLM/qwen-code/releases/download/v"
                  version "/qwen-code-linux-x64.tar.gz"))
            (sha256
-            (base32 "1g859dkq5qakrdrixcmrhfqfx8kj7br4c2yxqqs0iahxgqigf86s")))))
+            (base32 "0hf2w3br1gr5nsq3amyclj515np33w605hc5p97dm9afc21cdrrj")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list glibc (list gcc-14 "lib")))
