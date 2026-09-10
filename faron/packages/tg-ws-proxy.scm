@@ -11,16 +11,16 @@
 (define-public tg-ws-proxy-go
   (package
     (name "tg-ws-proxy-go")
-    (version "0.1.0")
+    (version "0.1.1")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/Acrym48/tg-ws-proxy-go")
-             (commit "1afa1a95511af02fdca746d93721e43841edcc33")))
+             (commit "4dd081bbb79d7367beb1d75c30bb2606c016bffd")))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1fn73jw0cmfr98pzl0cgxf712n19kzmm2qj7mx5wm9v0yw8ml3b0"))))
+        (base32 "1bywa5rzm3gys89cnsm517bb2z6f3r3fqv3p4978q6fc8x90fq01"))))
     (build-system go-build-system)
     (arguments
      (list
