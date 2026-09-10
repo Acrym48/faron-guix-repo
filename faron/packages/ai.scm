@@ -21,7 +21,7 @@
 (define-public opencode
   (package
     (name "opencode")
-    (version "1.18.29")
+    (version "1.18.30")
     (source
      (if (aarch64-build?)
          (origin
@@ -30,14 +30,14 @@
                  "https://github.com/anomalyco/opencode/releases/download/v"
                  version "/opencode-linux-arm64.tar.gz"))
            (sha256
-            (base32 "1h6kxsi2mjzgshcljziv9wcwxslhqcq6a0i4i6kfg92w75lzgfkh")))
+            (base32 "1vb64mhn4vgz9xavk19bkp9fd0026fifjldx2k1zmh0259faa4a1")))
          (origin
            (method url-fetch)
            (uri (string-append
                  "https://github.com/anomalyco/opencode/releases/download/v"
                  version "/opencode-linux-x64-baseline.tar.gz"))
            (sha256
-            (base32 "0b84gxaspjlidmd6lkgmxjkcamlz73mki9y3wkipfd72cgqg58q3")))))
+            (base32 "0qz0cj56vprlzfzqsbgbb7whwzn8sdh759x8vl3acv6qs13j3jb0")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list bash glibc (list gcc-14 "lib")))
