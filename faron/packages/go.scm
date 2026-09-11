@@ -1,4 +1,4 @@
-(define-module (faron packages tg-ws-proxy)
+(define-module (faron packages go)
   #:use-module (guix packages)
   #:use-module (guix build-system go)
   #:use-module (guix gexp)
