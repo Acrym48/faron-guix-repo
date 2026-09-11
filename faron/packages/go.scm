@@ -59,7 +59,7 @@
     (build-system go-build-system)
     (arguments
      (list
-      #:import-path "github.com/Acrym48/anilib-cli"
+      #:import-path "anilib-cli"
       #:install-source? #f
       #:phases
       #~(modify-phases %standard-phases
