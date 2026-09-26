@@ -13,6 +13,7 @@ with personal projects.
 | `antigravity` | AI coding agent for the terminal from Google (installed as `agy`) | [antigravity.google](https://antigravity.google) |
 | `qwen-code` | Open-source AI coding agent for the terminal | [github.com/QwenLM/qwen-code](https://github.com/QwenLM/qwen-code) |
 | `yazi` | Blazing-fast terminal file manager | [sxyazi/yazi](https://github.com/sxyazi/yazi) |
+| `codebase-memory-mcp` | Code intelligence MCP server backed by a local knowledge graph | [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) |
 | `tg-ws-proxy-go` | Local MTProto WebSocket proxy for Telegram Desktop | [Acrym48/tg-ws-proxy-go](https://github.com/Acrym48/tg-ws-proxy-go) |
 | `glow` | Render Markdown on the CLI, with pretty syntax highlighting | [charmbracelet/glow](https://github.com/charmbracelet/glow) |
 

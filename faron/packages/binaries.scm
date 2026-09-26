@@ -9,7 +9,7 @@
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages base)
-  #:export (yazi))
+  #:export (yazi codebase-memory-mcp))
 
 (define (aarch64-build?)
   (string-prefix? "aarch64"
@@ -82,4 +82,56 @@
     (description "yazi is a terminal file manager written in Rust, based on
 async I/O.")
     (home-page "https://yazi-rs.github.io")
+    (license license:expat)))
+
+;; Fully static prebuilt binary from GitHub Releases; the portable Linux
+;; archives carry no dynamic linkage, so no patchelf work is needed here.
+(define-public codebase-memory-mcp
+  (package
+    (name "codebase-memory-mcp")
+    (version "0.11.0")
+    (source
+     (if (aarch64-build?)
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://github.com/DeusData/codebase-memory-mcp/releases/download/v"
+                 version "/codebase-memory-mcp-linux-arm64-portable.tar.gz"))
+           (sha256
+            (base32 "0yycj3rsxxv7zfrc9h8y0h5z2cqhrxifqf090yiypqsy9lifnbnn")))
+         (origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://github.com/DeusData/codebase-memory-mcp/releases/download/v"
+                 version "/codebase-memory-mcp-linux-amd64-portable.tar.gz"))
+           (sha256
+            (base32 "10v6603dcgxarp7mqlmdzwlxg9ix0gyfi9r7z9fc1i9bxf9q57hz")))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (delete 'build)
+          (delete 'check)
+          (delete 'validate-runpath)
+          (delete 'strip)
+          (replace 'install
+            (lambda _
+              (let ((bin (string-append #$output "/bin"))
+                    (doc (string-append #$output "/share/doc/"
+                                        #$name "-" #$version)))
+                (mkdir-p bin)
+                (mkdir-p doc)
+                (install-file "codebase-memory-mcp" bin)
+                (chmod (string-append bin "/codebase-memory-mcp") #o755)
+                (install-file "LICENSE" doc)
+                (install-file "THIRD_PARTY_NOTICES.md" doc)))))))
+    (synopsis "Code intelligence MCP server backed by a knowledge graph")
+    (description "codebase-memory-mcp is an MCP server that indexes a codebase
+into a persistent local knowledge graph using vendored tree-sitter grammars for
+over 150 languages, and answers structural queries from AI coding agents in
+under a millisecond.  It ships as a single self-contained, fully static
+executable with no language runtime or API key.")
+    (home-page "https://github.com/DeusData/codebase-memory-mcp")
     (license license:expat)))
