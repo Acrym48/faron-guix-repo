@@ -88,7 +88,7 @@ write code in your terminal, IDE, or desktop.")
 (define-public claude-code
   (package
     (name "claude-code")
-    (version "2.1.263")
+    (version "2.1.283")
     (source
      (if (aarch64-build?)
          (origin
@@ -98,7 +98,7 @@ write code in your terminal, IDE, or desktop.")
                  version "/linux-arm64/claude"))
            (file-name (string-append "claude-" version))
            (sha256
-            (base32 "00sc5f8c5r7yav6inxmp3z9ry5vlyqbyir6sqyf00vkcmv4df9bx")))
+            (base32 "15z62p32gydnhv2cz94q0slxyqjwkdbm7j8sw46zrmh3057jjv9l")))
          (origin
            (method url-fetch)
            (uri (string-append
@@ -106,7 +106,7 @@ write code in your terminal, IDE, or desktop.")
                  version "/linux-x64/claude"))
            (file-name (string-append "claude-" version))
            (sha256
-            (base32 "1fnmh4diar2d6r1fbl5i3c6dzjdl8g7czwwhcw0g84l13qsj1l16")))))
+            (base32 "1qjah1g1w7z06ncj1nw6fi7mkcg1abp8p1pgc5f5j819wcy5hn8q")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list glibc))
@@ -149,7 +149,7 @@ read and edit your code, run commands, and delegate subtasks to subagents.")
 (define-public antigravity
   (package
     (name "antigravity")
-    (version "1.1.27")
+    (version "1.2.11")
     (source
      (if (aarch64-build?)
          (origin
@@ -158,14 +158,14 @@ read and edit your code, run commands, and delegate subtasks to subagents.")
                  "https://github.com/google-antigravity/antigravity-cli/"
                  "releases/download/" version "/agy_cli_linux_arm64.tar.gz"))
            (sha256
-            (base32 "153axdyc2ihjj63c9gik9ni275ic6rpaxr6b0b6hcx06lvjrzz4p")))
+            (base32 "1g4j9sr83dn63dcxxgzwhj4wpg3z82xix05s8lq3b4lm3z33nl81")))
          (origin
            (method url-fetch)
            (uri (string-append
-                 "https://storage.googleapis.com/antigravity-public/antigravity-cli/"
-                 version "-5211191891591168/linux-x64/cli_linux_x64.tar.gz"))
+                 "https://github.com/google-antigravity/antigravity-cli/"
+                 "releases/download/" version "/agy_cli_linux_x64.tar.gz"))
            (sha256
-            (base32 "1gi0kbykgs4jcrp79zfv9bkbdz2nnrgz507mc3v2sg57p3vd8x7q")))))
+            (base32 "146i8nvc3ph4ssrs0jqalr5dnjfp2za9lyqxgrd4z5gswv2n4769")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list glibc))
@@ -208,7 +208,7 @@ debug, and ship code from the terminal.")
 (define-public qwen-code
   (package
     (name "qwen-code")
-    (version "0.23.2")
+    (version "0.24.6")
     (source
      (if (aarch64-build?)
          (origin
@@ -217,14 +217,14 @@ debug, and ship code from the terminal.")
                  "https://github.com/QwenLM/qwen-code/releases/download/v"
                  version "/qwen-code-linux-arm64.tar.gz"))
            (sha256
-            (base32 "0ayimxrywy22x68j3y1394jymrc7bpa9wrl91shz0hpvykgzbppn")))
+            (base32 "0parrxxc117bsb1vlhm1kac103z59836wbbqs31rn0xcwhdmnp2d")))
          (origin
            (method url-fetch)
            (uri (string-append
                  "https://github.com/QwenLM/qwen-code/releases/download/v"
                  version "/qwen-code-linux-x64.tar.gz"))
            (sha256
-            (base32 "0hf2w3br1gr5nsq3amyclj515np33w605hc5p97dm9afc21cdrrj")))))
+            (base32 "0qbp1f8vr3cn542qc22izx3ff97yyf5rji5dh682bjvlm69rgfp9")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list glibc (list gcc-14 "lib")))
