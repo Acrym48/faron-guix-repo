@@ -16,6 +16,7 @@ with personal projects.
 | `codebase-memory-mcp` | Code intelligence MCP server backed by a local knowledge graph | [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) |
 | `tg-ws-proxy-go` | Local MTProto WebSocket proxy for Telegram Desktop | [Acrym48/tg-ws-proxy-go](https://github.com/Acrym48/tg-ws-proxy-go) |
 | `glow` | Render Markdown on the CLI, with pretty syntax highlighting | [charmbracelet/glow](https://github.com/charmbracelet/glow) |
+| `driftwm` | Trackpad-first infinite canvas Wayland compositor (Smithay) | [malbiruk/driftwm](https://github.com/malbiruk/driftwm) |
 
 Packages built from source reuse the system Guix libraries. The `glow`
 package is built from the [charm.land/glow/v3](https://github.com/charmbracelet/glow)
