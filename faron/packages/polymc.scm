@@ -20,19 +20,19 @@
 (define-public polymc
   (package
     (name "polymc")
-    (version "7.1")
+    (version "8.1")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/PolyMC/PolyMC")
-             (commit "9b01b80bfd43768c478ad6a0bdf532bc51635973")
+             (commit "5ad72dda606a7e8a3a3c7adae6de7053597fcc23")
              ;; Сабмодули (libnbtplusplus, quazip, tomlplusplus,
              ;; ghc-filesystem) нужны для сборки.
              (recursive? #t)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "05zr0ib3a78yrhh2wnc3adidw17za89fd56c0pyq8gkrf6kakak8"))))
+        (base32 "1z8j5f5ghayfl9kvr68c5f6j1rb3rd8ngi0cds2n3msim2hf0k8z"))))
     (build-system cmake-build-system)
     (arguments
      (list
