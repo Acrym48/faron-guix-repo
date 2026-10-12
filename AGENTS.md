@@ -10,6 +10,8 @@ Guix-канал `faron`: пакеты, которых нет в официаль
   `glow.scm` (Go из исходников + свой dep-стек), `go.scm` (Go из исходников),
   `java-runtimes.scm` (trivial-бандл), `polymc.scm` (CMake/Qt),
   `driftwm.scm` (Rust офлайн через вендор).
+- `faron/services/*.scm` — Shepherd-сервисы (сейчас: `tg-ws-proxy.scm`
+  с системным и home-типами для `tg-ws-proxy-go`).
 - `README.md` — таблица пакетов + установка. Обновлять при добавлении пакета.
 - `test/` — пустая, пока не используется.
 - `.guix-channel` — имя канала (`faron`), не трогать.
@@ -128,6 +130,26 @@ GUIX_PACKAGE_PATH=. guix refresh <pkg>   # проверить, есть ли а�
 
 - `trivial-build-system` для склейки нескольких store-пакетов
   (симлинки в `_jvm/<major>/`, версионированные лаунчеры в `bin/`).
+
+## Сервисы (`faron/services/*.scm`, см. `tg-ws-proxy.scm`)
+
+- Конфиг — `define-record-type*` из `(guix records)`; CLI-флаги собирать
+  одной функцией в список строк (`append` + `append-map` для repeatable),
+  плюс поле `extra-arguments` как escape hatch.
+- Один конструктор `<shepherd-service>` на два типа: системный
+  (`shepherd-root-service-type` из `(gnu services shepherd)` +
+  `account-service-type` для выделенного юзера) и home
+  (`home-shepherd-service-type` из `(gnu home services shepherd)` —
+  принимает обычные `<shepherd-service>`).
+- `#:user`/`#:group` в `make-forkexec-constructor` — только для системного
+  сервиса, сплайсить условно через `#$@(if user ...)`; в home юзер/группа
+  из конфига игнорируются.
+- Выделенный юзер: `user-account`/`user-group` из `(gnu system accounts)`,
+  `account-service-type` из `(gnu system shadow)`, shell —
+  `(file-append shadow "/sbin/nologin")` (`shadow` из `(gnu packages admin)`).
+- Секреты НЕ класть в store и command line (видно через `ps`): читать файл
+  на старте через `program-file`-враппер в `TG_WS_PROXY_*` env
+  (`secret-file` в конфиге, `secret` — только для отладки).
 
 ## Версии и хэши
 
