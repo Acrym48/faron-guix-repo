@@ -62,6 +62,40 @@ and reference the package by name:
   (packages (list polymc glow)))
 ```
 
+## Services
+
+`tg-ws-proxy-go` ships Shepherd services (`faron services tg-ws-proxy`)
+for both system and home configurations:
+
+```scheme
+;; system.scm — runs under a dedicated unprivileged user
+(use-modules (faron services tg-ws-proxy))
+
+(operating-system
+  ;; ...
+  (services (cons (service tg-ws-proxy-service-type
+                           (tg-ws-proxy-configuration
+                            (port 1443)
+                            (secret-file "/etc/tg-ws-proxy/secret")))
+                  %base-services)))
+```
+
+```scheme
+;; home.scm — runs as the home user
+(use-modules (faron services tg-ws-proxy))
+
+(home-environment
+  ;; ...
+  (services (cons (service tg-ws-proxy-home-service-type
+                           (tg-ws-proxy-configuration
+                            (fallback 'cf)))
+                  %base-home-services)))
+```
+
+Prefer `secret-file` over `secret`: the file is read at service start into
+`TG_WS_PROXY_SECRET` and never lands in the store, while a plain `secret`
+string ends up on the daemon command line (visible via `ps`).
+
 ## License
 
 Unless otherwise noted, the channel code is free software licensed under the
