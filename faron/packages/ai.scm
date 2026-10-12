@@ -15,29 +15,30 @@
   (string-prefix? "aarch64"
                   (or (%current-target-system) (%current-system))))
 
-;; Prebuilt glibc binary from GitHub Releases; ELF interpreter is patched to
-;; the glibc loader from the Guix store ('-baseline' on x86_64).  libgcc_s.so.1
-;; is shipped in lib/ and provided via LD_LIBRARY_PATH in the wrapper.
+;; Prebuilt glibc binary from the npm registry (opencode.ai install script
+;; scheme); ELF interpreter is patched to the glibc loader from the Guix
+;; store ('-baseline' on x86_64).  libgcc_s.so.1 is shipped in lib/ and
+;; provided via LD_LIBRARY_PATH in the wrapper.
 (define-public opencode
   (package
     (name "opencode")
-    (version "1.19.0")
+    (version "2.0.27")
     (source
      (if (aarch64-build?)
          (origin
            (method url-fetch)
            (uri (string-append
-                 "https://github.com/anomalyco/opencode/releases/download/v"
-                 version "/opencode-linux-arm64.tar.gz"))
+                 "https://registry.npmjs.org/@opencode/cli-linux-arm64/-/"
+                 "cli-linux-arm64-" version ".tgz"))
            (sha256
-            (base32 "0sz281c886vs4yd5b2vcc1z0kyxlp39r45b9s9pg7a71sd1iv179")))
+            (base32 "0pf1r4qcql22qlijvlpwy5hrqlf03ippgy3bzrbkvkizz0n2882v")))
          (origin
            (method url-fetch)
            (uri (string-append
-                 "https://github.com/anomalyco/opencode/releases/download/v"
-                 version "/opencode-linux-x64-baseline.tar.gz"))
+                 "https://registry.npmjs.org/@opencode/cli-linux-x64-baseline/-/"
+                 "cli-linux-x64-baseline-" version ".tgz"))
            (sha256
-            (base32 "0f4402vzzjsjknpnjxxd4ianij3k4p7yjms38pm221wrnc6xfd33")))))
+            (base32 "0mvjpy6xis8laxfwcxril42aja9bk8h0jfv8w5pxc9p1p9pc5c5c")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list bash glibc (list gcc-14 "lib")))
@@ -60,7 +61,7 @@
                                                 "lib/libgcc_s.so.1")))
                 (mkdir-p libexec)
                 (mkdir-p lib)
-                (install-file "opencode" libexec)
+                (install-file "package/bin/opencode" libexec)
                 (chmod real #o755)
                 (invoke "patchelf"
                         "--set-interpreter"
