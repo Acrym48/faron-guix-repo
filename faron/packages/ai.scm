@@ -61,7 +61,7 @@
                                                 "lib/libgcc_s.so.1")))
                 (mkdir-p libexec)
                 (mkdir-p lib)
-                (install-file "package/bin/opencode" libexec)
+                (install-file "bin/opencode" libexec)
                 (chmod real #o755)
                 (invoke "patchelf"
                         "--set-interpreter"
