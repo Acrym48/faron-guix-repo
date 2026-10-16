@@ -96,6 +96,26 @@ Prefer `secret-file` over `secret`: the file is read at service start into
 `TG_WS_PROXY_SECRET` and never lands in the store, while a plain `secret`
 string ends up on the daemon command line (visible via `ps`).
 
+## Updating packages
+
+`bump.sh` checks upstream APIs for new versions of the `url-fetch`
+packages, refreshes the `version` and both `nix-base32` hashes
+(`x86_64` + `aarch64`), and commits each update as
+`bump <pkg> <old> -> <new>`:
+
+```bash
+./bump.sh --check          # only show what is outdated
+./bump.sh                  # update everything, committing per package
+./bump.sh qwen-code yazi   # update selected packages only
+```
+
+Covered: `opencode`, `claude-code`, `antigravity`, `qwen-code`,
+`kimi-code`, `yazi`, `codebase-memory-mcp`, `driftwm`.  The `git-fetch`
+packages (`glow` + its Go stack, `tg-ws-proxy-go`, `anilib-cli`,
+`polymc`) still need a manual bump with `guix hash -r`.  Needs `curl`,
+`jq`, `python3`, `git`; set `GITHUB_TOKEN` to avoid GitHub API
+rate limits.
+
 ## License
 
 Unless otherwise noted, the channel code is free software licensed under the
