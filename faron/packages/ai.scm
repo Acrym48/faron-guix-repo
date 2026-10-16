@@ -89,7 +89,7 @@ write code in your terminal, IDE, or desktop.")
 (define-public claude-code
   (package
     (name "claude-code")
-    (version "2.1.283")
+    (version "2.1.301")
     (source
      (if (aarch64-build?)
          (origin
@@ -99,7 +99,7 @@ write code in your terminal, IDE, or desktop.")
                  version "/linux-arm64/claude"))
            (file-name (string-append "claude-" version))
            (sha256
-            (base32 "15z62p32gydnhv2cz94q0slxyqjwkdbm7j8sw46zrmh3057jjv9l")))
+            (base32 "1w04hrxsqyg1ird8v1bsdxwyi1hm0f7451lqbyx5klq2m0v9048y")))
          (origin
            (method url-fetch)
            (uri (string-append
@@ -107,7 +107,7 @@ write code in your terminal, IDE, or desktop.")
                  version "/linux-x64/claude"))
            (file-name (string-append "claude-" version))
            (sha256
-            (base32 "1qjah1g1w7z06ncj1nw6fi7mkcg1abp8p1pgc5f5j819wcy5hn8q")))))
+            (base32 "08njpj4sjcnra6slq1xfdq56xx0wssajbyczi1yrrdf7hacss6mw")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list glibc))
