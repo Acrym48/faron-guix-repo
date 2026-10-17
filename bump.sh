@@ -5,7 +5,7 @@
 #
 # Покрывает пакеты на url-fetch (версию и хэш можно получить без guix):
 #   opencode, claude-code, antigravity, qwen-code, kimi-code,
-#   yazi, codebase-memory-mcp, driftwm
+#   yazi, codebase-memory-mcp, driftwm, onlyoffice-desktopeditors
 # Пакеты на git-fetch (нужен `guix hash -r` по чекауту) не трогает:
 #   glow (+go-стек), tg-ws-proxy-go, anilib-cli, polymc — их бампить вручную.
 #
@@ -296,6 +296,12 @@ want codebase-memory-mcp && run github_bump codebase-memory-mcp "$BIN" \
     codebase-memory-mcp-linux-arm64-portable.tar.gz \
     codebase-memory-mcp-linux-amd64-portable.tar.gz
 want driftwm && run bump_driftwm
+want onlyoffice-desktopeditors && run github_bump onlyoffice-desktopeditors \
+    faron/packages/onlyoffice.scm \
+    ONLYOFFICE/DesktopEditors LATEST 1 \
+    "https://github.com/ONLYOFFICE/DesktopEditors/releases/download/{T}/" \
+    onlyoffice-desktopeditors-aarch64.tar.xz \
+    onlyoffice-desktopeditors-x64.tar.xz
 
 if [ "$CHECK" = 0 ]; then
     echo
