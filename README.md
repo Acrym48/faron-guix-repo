@@ -17,6 +17,7 @@ with personal projects.
 | `tg-ws-proxy-go` | Local MTProto WebSocket proxy for Telegram Desktop | [Acrym48/tg-ws-proxy-go](https://github.com/Acrym48/tg-ws-proxy-go) |
 | `glow` | Render Markdown on the CLI, with pretty syntax highlighting | [charmbracelet/glow](https://github.com/charmbracelet/glow) |
 | `driftwm` | Trackpad-first infinite canvas Wayland compositor (Smithay) | [malbiruk/driftwm](https://github.com/malbiruk/driftwm) |
+| `onlyoffice-desktopeditors` | Office suite for documents, spreadsheets, and presentations | [ONLYOFFICE/DesktopEditors](https://github.com/ONLYOFFICE/DesktopEditors) |
 
 Packages built from source reuse the system Guix libraries. The `glow`
 package is built from the [charm.land/glow/v3](https://github.com/charmbracelet/glow)
