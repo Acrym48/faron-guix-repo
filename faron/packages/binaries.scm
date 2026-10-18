@@ -89,7 +89,7 @@ async I/O.")
 (define-public codebase-memory-mcp
   (package
     (name "codebase-memory-mcp")
-    (version "0.11.0")
+    (version "0.12.1")
     (source
      (if (aarch64-build?)
          (origin
@@ -98,14 +98,14 @@ async I/O.")
                  "https://github.com/DeusData/codebase-memory-mcp/releases/download/v"
                  version "/codebase-memory-mcp-linux-arm64-portable.tar.gz"))
            (sha256
-            (base32 "0yycj3rsxxv7zfrc9h8y0h5z2cqhrxifqf090yiypqsy9lifnbnn")))
+            (base32 "0crmlpv29308d21pdlr6mw0s12f185w9ybhw80f156ypiia1y3zd")))
          (origin
            (method url-fetch)
            (uri (string-append
                  "https://github.com/DeusData/codebase-memory-mcp/releases/download/v"
                  version "/codebase-memory-mcp-linux-amd64-portable.tar.gz"))
            (sha256
-            (base32 "10v6603dcgxarp7mqlmdzwlxg9ix0gyfi9r7z9fc1i9bxf9q57hz")))))
+            (base32 "1h9nvqsal2jnx91q4i2p1wm5dip2si477kw4rj7ff0a30r0h6gcc")))))
     (build-system gnu-build-system)
     (arguments
      (list
