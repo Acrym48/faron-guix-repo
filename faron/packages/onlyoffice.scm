@@ -39,6 +39,14 @@
 ;; (GTK3, X11/xcb, dbus, cups, NSS, GStreamer, ...).  CEF's chrome-sandbox is
 ;; not setuid in the tarball, so Chromium falls back to the unprivileged user
 ;; namespace sandbox.
+;;
+;; Fonts: CApplicationFonts ignores fontconfig and walks a hardcoded set of
+;; directories (/usr/share/fonts, /usr/share/X11/fonts, /run/host/fonts,
+;; /usr/local/share/fonts) plus $CUSTOM_FONTS_PATH.  None of those exist on
+;; Guix, so out of the box the app only sees its own bundled fonts/ dir.  The
+;; .desktop therefore exports CUSTOM_FONTS_PATH at the user's home profile, the
+;; one place Guix Home keeps per-user fonts.  Launching from a shell still needs
+;; the variable exported by hand.
 (define-public onlyoffice-desktopeditors
   (package
     (name "onlyoffice-desktopeditors")
@@ -67,6 +75,7 @@
            (list gcc-14 "lib")
            alsa-lib
            at-spi2-core
+           coreutils
            cups
            dbus
            expat
@@ -170,11 +179,21 @@
                     `("LD_LIBRARY_PATH" ":" prefix ,libdirs)))
                 (install-file "usr/share/applications/onlyoffice-desktopeditors.desktop"
                               (string-append share "/applications"))
+                ;; The font list is NOT taken from fontconfig: CApplicationFonts
+                ;; walks a fixed set of directories (all absent on Guix) plus
+                ;; whatever $CUSTOM_FONTS_PATH points at.  A desktop file is not
+                ;; run by a shell, so export the variable through env(1) and let
+                ;; %h expand to $HOME.  The pattern is a prefix of all five Exec
+                ;; lines (main entry + the four actions), so one substitution
+                ;; rewrites every one of them.
                 (substitute* (string-append
                               share
                               "/applications/onlyoffice-desktopeditors.desktop")
                   (("Exec=/usr/bin/onlyoffice-desktopeditors")
-                   (string-append "Exec=" bin "/onlyoffice-desktopeditors")))
+                   (string-append
+                    "Exec=" #$(file-append coreutils "/bin/env")
+                    " CUSTOM_FONTS_PATH=%h/.guix-home/profile/share/fonts "
+                    bin "/onlyoffice-desktopeditors")))
                 (copy-recursively "usr/share/icons" (string-append share "/icons"))
                 (mkdir-p doc)
                 (for-each (lambda (f)
