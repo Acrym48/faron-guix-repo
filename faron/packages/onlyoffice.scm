@@ -11,6 +11,7 @@
   #:use-module (gnu packages cups)
   #:use-module (gnu packages elf)
   #:use-module (gnu packages fontutils)
+  #:use-module (gnu packages fonts)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages gl)
   #:use-module (gnu packages glib)
@@ -29,6 +30,17 @@
 (define (aarch64-build?)
   (string-prefix? "aarch64"
                   (or (%current-target-system) (%current-system))))
+
+;; The web UI is styled for Windows: every theme sets
+;; --font-family-base to "Segoe UI", which does not exist on Linux, so the
+;; whole interface falls back to Arial/Helvetica/sans-serif.  Point it at a
+;; font that is actually installed instead.  DejaVu Sans is the generic
+;; sans-serif of every Guix system (font-dejavu), and it is what the UI
+;; ends up rendering with today anyway -- this just makes it explicit.
+(define %onlyoffice-ui-font "DejaVu Sans")
+
+;; Base font size of the web UI, in CSS pixels.
+(define %onlyoffice-ui-font-size 12)
 
 ;; Prebuilt Qt5/CEF office suite.  The tarball ships Linux images for both
 ;; architectures under opt/onlyoffice/desktopeditors plus a /usr tree (launcher,
@@ -69,16 +81,18 @@
            (sha256
             (base32 "16nsjmcmf7jhjrkfmxp8q29lvvvj1w04v45m2cwgpilrcjz5hhdl")))))
     (build-system gnu-build-system)
-    (native-inputs (list patchelf xz))
+    (native-inputs (list patchelf sed xz))
     (inputs
      (list bash
            glibc
            (list gcc-14 "lib")
+           adwaita-icon-theme
            alsa-lib
            at-spi2-core
            cups
            dbus
            expat
+           font-dejavu
            font-microsoft-times-new-roman
            fontconfig
            freetype
@@ -189,6 +203,124 @@
                    fontdir
                    #:follow-symlinks? #t
                    #:log #f))
+                ;; DejaVu Sans for the document canvas as well: the canvas uses
+                ;; the app's own font list (CApplicationFonts), which walks the
+                ;; bundled fonts/ tree, not fontconfig.
+                (let ((dejavu (string-append
+                               (assoc-ref inputs "font-dejavu")
+                               "/share/fonts/truetype"))
+                      (fontdir (string-append app "/fonts/dejavu")))
+                  (mkdir-p fontdir)
+                  (for-each
+                   (lambda (f)
+                     (install-file (string-append dejavu "/" f) fontdir))
+                   '("DejaVuSans.ttf"
+                     "DejaVuSans-Bold.ttf"
+                     "DejaVuSans-Oblique.ttf"
+                     "DejaVuSans-BoldOblique.ttf"
+                     "DejaVuSansMono.ttf"
+                     "DejaVuSansMono-Bold.ttf"
+                     "DejaVuSansMono-Oblique.ttf"
+                     "DejaVuSansMono-BoldOblique.ttf")))
+                ;; Fontconfig for the embedded Chromium.  The app's fontconfig
+                ;; has no main fonts.conf (Guix ships fontconfig-minimal), so
+                ;; Chromium falls back to its own built-in configuration, which
+                ;; knows nothing about the store.  What it does include is the
+                ;; user's ~/.config/fontconfig/fonts.conf, i.e. the home
+                ;; profile -- and nothing else.  Without DejaVu there, the
+                ;; generic sans-serif resolves to Times New Roman and the whole
+                ;; interface renders serif.  Point FONTCONFIG_FILE (set in the
+                ;; wrapper below) at a config that adds the DejaVu directory
+                ;; while keeping the user's own settings.
+                (let ((fc (string-append out "/etc/fonts.conf")))
+                  (mkdir-p (dirname fc))
+                  (call-with-output-file fc
+                    (lambda (port)
+                      (display "<?xml version=\"1.0\"?>\n\
+<!DOCTYPE fontconfig SYSTEM \"fonts.dtd\">\n\
+<fontconfig>\n\
+  <include ignore_missing=\"yes\" prefix=\"xdg\">fontconfig/fonts.conf</include>\n\
+  <dir>" port)
+                      (display (string-append
+                                (assoc-ref inputs "font-dejavu")
+                                "/share/fonts") port)
+                      (display "</dir>\n\
+  <cachedir prefix=\"xdg\">fontconfig</cachedir>\n\
+</fontconfig>\n" port))))
+                ;; Interface font.  The web UI is styled for Windows: every
+                ;; theme sets --font-family-base to "Segoe UI", which does
+                ;; not exist on Linux.  Worse, the rules that use it are
+                ;; written as
+                ;;   font-family:var(--font-family-base-custom,
+                ;;                   var(--font-family-base)),Arial,...
+                ;; and where the variable is not in scope the whole
+                ;; declaration is invalid at computed-value time, so the
+                ;; browser falls back to its default (a serif).  Replace
+                ;; the declarations themselves rather than just the
+                ;; variable, so they cannot become invalid.
+                ;;
+                ;; The stylesheets are minified into single huge lines, so
+                ;; substitute* is unusable here (it replaces whole lines) --
+                ;; use sed.  Each value ends at the next ';' or '}' and none
+                ;; of them contain either.
+                (for-each
+                 (lambda (rel)
+                   (let ((f (string-append app "/" rel)))
+                     (when (file-exists? f)
+                       (invoke "sed" "-i"
+                                "-e"
+                                (string-append
+                                 "s|--font-family-base:[^;}]*|"
+                                 "--font-family-base:\""
+                                 #$%onlyoffice-ui-font "\"|g")
+                                "-e"
+                                (string-append
+                                 "s|font-family:var(--font-family-base-custom[^;}]*|"
+                                 "font-family:\""
+                                 #$%onlyoffice-ui-font "\"|g")
+                                "-e"
+                                (string-append
+                                 "s|font-family:Arial,Helvetica,"
+                                 "\"Helvetica Neue\",sans-serif|"
+                                 "font-family:\""
+                                 #$%onlyoffice-ui-font "\"|g")
+                                ;; The body rule carries the base size of
+                                ;; the whole interface.  Mark it first: the
+                                ;; font-family substitution above rewrites
+                                ;; the very same rule.
+                                "-e"
+                                (string-append
+                                 "s|body{font-family:\\([^;}]*\\);"
+                                 "font-size:11px|"
+                                 "body{font-family:\\1;font-size:"
+                                 (number->string #$%onlyoffice-ui-font-size)
+                                 "px|g")
+                                ;; Theme base sizes, one pixel up.  The
+                                ;; markers keep the two substitutions from
+                                ;; eating each other.
+                                "-e" "s|--font-size-base:11px|--font-size-base:@BS@|g"
+                                "-e" (string-append
+                                      "s|--font-size-base:12px|--font-size-base:"
+                                      (number->string
+                                       (1+ #$%onlyoffice-ui-font-size))
+                                      "px|g")
+                                "-e" (string-append "s|@BS@|"
+                                      (number->string
+                                       #$%onlyoffice-ui-font-size)
+                                      "px|g")
+                                f))))
+                 ;; The list of files is spelled out here rather than in a
+                 ;; module-level constant: inside a gexp, #$ splices a list
+                 ;; into the enclosing form instead of passing it as one
+                 ;; argument, so a list cannot be handed over that way.
+                 '("index.html"
+                   "addon.html"
+                   "editors/web-apps/apps/documenteditor/main/resources/css/app.css"
+                   "editors/web-apps/apps/documenteditor/forms/resources/css/app-all.css"
+                   "editors/web-apps/apps/spreadsheeteditor/main/resources/css/app.css"
+                   "editors/web-apps/apps/presentationeditor/main/resources/css/app.css"
+                   "editors/web-apps/apps/pdfeditor/main/resources/css/app.css"
+                   "editors/web-apps/apps/visioeditor/main/resources/css/app.css"))
                 (mkdir-p bin)
                 (install-file "usr/bin/onlyoffice-desktopeditors" bin)
                 (let ((launcher (string-append bin "/onlyoffice-desktopeditors")))
@@ -202,7 +334,26 @@
                   (chmod launcher #o755)
                   (wrap-program launcher
                     #:sh #$(file-append bash "/bin/sh")
-                    `("LD_LIBRARY_PATH" ":" prefix ,libdirs)))
+                    `("LD_LIBRARY_PATH" ":" prefix ,libdirs)
+                    ;; See the install phase: without this the embedded
+                    ;; Chromium ends up with a font set that contains neither
+                    ;; DejaVu nor any generic sans-serif, and renders the
+                    ;; whole interface in Times New Roman.  The '=' action
+                    ;; replaces the value; it has to be the symbol, not the
+                    ;; string.
+                    (list "FONTCONFIG_FILE" ":" '=
+                          (list (string-append out "/etc/fonts.conf")))
+                    ;; GTK3 looks for the icon theme under $HOME/.icons and
+                    ;; XDG_DATA_DIRS/icons only, so a theme that merely sits
+                    ;; in the store closure stays invisible.  Put its share/
+                    ;; on the path.  (Guix ships no Adwaita *widget* theme
+                    ;; at all, so the window frame still uses GTK's Default;
+                    ;; this is about the icons in the toolbars and dialogs.)
+                    `("XDG_DATA_DIRS" ":"
+                      suffix
+                      ,(list (string-append
+                              (assoc-ref inputs "adwaita-icon-theme")
+                              "/share")))))
                 (install-file "usr/share/applications/onlyoffice-desktopeditors.desktop"
                               (string-append share "/applications"))
                 (substitute* (string-append
