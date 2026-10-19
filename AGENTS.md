@@ -9,7 +9,8 @@ Guix-канал `faron`: пакеты, которых нет в официаль
   `ai.scm` (AI-агенты, prebuilt), `binaries.scm` (prebuilt),
   `glow.scm` (Go из исходников + свой dep-стек), `go.scm` (Go из исходников),
   `java-runtimes.scm` (trivial-бандл), `polymc.scm` (CMake/Qt),
-  `driftwm.scm` (Rust офлайн через вендор).
+  `driftwm.scm` (Rust офлайн через вендор),
+  `fonts.scm` (mscorefonts, нужен onlyoffice), `onlyoffice.scm` (prebuilt).
 - `faron/services/*.scm` — Shepherd-сервисы (сейчас: `tg-ws-proxy.scm`
   с системным и home-типами для `tg-ws-proxy-go`).
 - `README.md` — таблица пакетов + установка. Обновлять при добавлении пакета.
@@ -181,6 +182,25 @@ GUIX_PACKAGE_PATH=. guix build --log-file <pkg>  # лог последней с�
 - Частый провал — несбалансированные скобки в `#:phases` (было на polymc);
   второй частый — забытый `#:use-module` под новый input
   (было: `unzip` без `(gnu packages compression)`).
+- **Ловушка gexp:** `(guix packages)` экспортирует макрос `replace`
+  (для `modify-inputs`). Внутри `#~(modify-phases ...)` символ `replace`
+  резолвится именно в него, и модуль не компилируется с
+  `'replace' may only be used within 'modify-inputs'` (было на `fonts.scm`).
+  `(guix build-system font)` без `#:export` реэкспортирует этот же `replace`,
+  поэтому импортировать его **до** `(guix build-system gnu)`. Обойти нельзя:
+  `%modify-phases` принимает только `delete`/`replace`/`add-after`/`add-before`,
+  `set!` не подходит.
+- **Ловушка канала:** `guix pull` собирает канал тем Guix, где подключены
+  только его собственные channels. Модули `(nongnu packages ...)` там могут
+  отсутствовать, даже если nonguix есть в `channels.scm`, — импорт из
+  channel-модуля роняет сборку канала целиком с `no code for module`.
+  Тащить нужное определение в канал (как `faron/packages/fonts.scm`).
+- Проверка компилируемости канала целиком (то, что делает `guix pull`):
+  ```bash
+  guix repl -L . -q   # и (resolve-interface '(faron packages <имя>)) по всем модулям
+  ```
+  Ошибка в одном модуле не всегда видна при `guix build <другой пакет>`:
+  сканирование `%load-path` её проглатывает как warning.
 
 ## Где искать символы Guix-модулей
 

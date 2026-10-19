@@ -18,6 +18,7 @@ with personal projects.
 | `glow` | Render Markdown on the CLI, with pretty syntax highlighting | [charmbracelet/glow](https://github.com/charmbracelet/glow) |
 | `driftwm` | Trackpad-first infinite canvas Wayland compositor (Smithay) | [malbiruk/driftwm](https://github.com/malbiruk/driftwm) |
 | `onlyoffice-desktopeditors` | Office suite for documents, spreadsheets, and presentations | [ONLYOFFICE/DesktopEditors](https://github.com/ONLYOFFICE/DesktopEditors) |
+| `font-microsoft-times-new-roman` | Times New Roman from the Microsoft core fonts for the web | [corefonts](https://sourceforge.net/projects/corefonts/) |
 
 Packages built from source reuse the system Guix libraries. The `glow`
 package is built from the [charm.land/glow/v3](https://github.com/charmbracelet/glow)

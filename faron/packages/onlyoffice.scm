@@ -23,7 +23,7 @@
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xml)
   #:use-module (gnu packages xorg)
-  #:use-module (nongnu packages fonts)
+  #:use-module (faron packages fonts)
   #:export (onlyoffice-desktopeditors))
 
 (define (aarch64-build?)
