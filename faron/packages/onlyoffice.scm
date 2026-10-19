@@ -23,6 +23,7 @@
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xml)
   #:use-module (gnu packages xorg)
+  #:use-module (nongnu packages fonts)
   #:export (onlyoffice-desktopeditors))
 
 (define (aarch64-build?)
@@ -43,10 +44,10 @@
 ;; Fonts: CApplicationFonts ignores fontconfig and walks a hardcoded set of
 ;; directories (/usr/share/fonts, /usr/share/X11/fonts, /run/host/fonts,
 ;; /usr/local/share/fonts) plus $CUSTOM_FONTS_PATH.  None of those exist on
-;; Guix, so out of the box the app only sees its own bundled fonts/ dir.  The
-;; .desktop therefore exports CUSTOM_FONTS_PATH at the user's home profile, the
-;; one place Guix Home keeps per-user fonts.  Launching from a shell still needs
-;; the variable exported by hand.
+;; Guix, so the app only ever sees the fonts shipped in the tarball.  We bake
+;; font packages into the tarball's own fonts/ tree as real files; see the
+;; install phase for why symlinks (i.e. anything reachable through a Guix
+;; profile) are invisible to it.
 (define-public onlyoffice-desktopeditors
   (package
     (name "onlyoffice-desktopeditors")
@@ -75,10 +76,10 @@
            (list gcc-14 "lib")
            alsa-lib
            at-spi2-core
-           coreutils
            cups
            dbus
            expat
+           font-microsoft-times-new-roman
            fontconfig
            freetype
            gdk-pixbuf
@@ -163,6 +164,31 @@
                                     (string-append app "/" exe)))
                           '("DesktopEditors" "editors_helper"
                             "chrome-sandbox" "converter/x2t"))
+                ;; System fonts.  CApplicationFonts::GetSetupFontFiles walks
+                ;; /usr/share/fonts, /usr/share/X11/fonts, /run/host/fonts,
+                ;; /usr/local/share/fonts and $CUSTOM_FONTS_PATH -- all
+                ;; absent on Guix -- and never asks fontconfig.  The desktop
+                ;; app additionally registers "./fonts" relative to the
+                ;; executable, so anything dropped into the tarball's own
+                ;; fonts/ tree is picked up, and that works for both GUI and
+                ;; shell launches with no env var.
+                ;;
+                ;; The files MUST be real copies.  Guix profiles are built
+                ;; from symlinks and NSDirectory::GetFiles2 only acts on
+                ;; DT_REG/DT_DIR (plus a DT_UNKNOWN stat fallback), so a
+                ;; DT_LNK entry is dropped without a word -- which is why
+                ;; pointing CUSTOM_FONTS_PATH at a profile yields nothing.
+                ;; Copying is the only option: store and $HOME sit on
+                ;; separate filesystems here, so hardlinks fail too.
+                (let ((fontdir (string-append app "/fonts/microsoft")))
+                  (mkdir-p fontdir)
+                  (copy-recursively
+                   (string-append
+                    (assoc-ref inputs "font-microsoft-times-new-roman")
+                    "/share/fonts")
+                   fontdir
+                   #:follow-symlinks? #t
+                   #:log #f))
                 (mkdir-p bin)
                 (install-file "usr/bin/onlyoffice-desktopeditors" bin)
                 (let ((launcher (string-append bin "/onlyoffice-desktopeditors")))
@@ -179,21 +205,11 @@
                     `("LD_LIBRARY_PATH" ":" prefix ,libdirs)))
                 (install-file "usr/share/applications/onlyoffice-desktopeditors.desktop"
                               (string-append share "/applications"))
-                ;; The font list is NOT taken from fontconfig: CApplicationFonts
-                ;; walks a fixed set of directories (all absent on Guix) plus
-                ;; whatever $CUSTOM_FONTS_PATH points at.  A desktop file is not
-                ;; run by a shell, so export the variable through env(1) and let
-                ;; %h expand to $HOME.  The pattern is a prefix of all five Exec
-                ;; lines (main entry + the four actions), so one substitution
-                ;; rewrites every one of them.
                 (substitute* (string-append
                               share
                               "/applications/onlyoffice-desktopeditors.desktop")
                   (("Exec=/usr/bin/onlyoffice-desktopeditors")
-                   (string-append
-                    "Exec=" #$(file-append coreutils "/bin/env")
-                    " CUSTOM_FONTS_PATH=%h/.guix-home/profile/share/fonts "
-                    bin "/onlyoffice-desktopeditors")))
+                   (string-append "Exec=" bin "/onlyoffice-desktopeditors")))
                 (copy-recursively "usr/share/icons" (string-append share "/icons"))
                 (mkdir-p doc)
                 (for-each (lambda (f)
