@@ -18,7 +18,7 @@
 
 ;; The release tarball and the matching offline vendor tarball share versions,
 ;; so keep it in one place.
-(define %driftwm-version "0.19.0")
+(define %driftwm-version "0.20.0")
 
 ;; Upstream publishes a vendored-deps tarball with every release (see "Offline
 ;; build" in its README).  It carries `vendor/' plus the `.cargo/config.toml'
@@ -32,7 +32,7 @@
                         %driftwm-version "/driftwm-" %driftwm-version
                         "-vendor.tar.xz"))
     (sha256
-     (base32 "02lddj7lh1s5jy9d5i1f5lxg7pmcsmqczpcqdgpzw3p7a3s76mdb"))))
+     (base32 "1nzykm2kcnp9b3360dybj5qgrx2rrl7ibr1aa18rsnvkisl4a8cy"))))
 
 (define-public driftwm
   (package
@@ -45,7 +45,7 @@
                            version ".tar.gz"))
        (file-name (string-append name "-" version ".tar.gz"))
        (sha256
-        (base32 "0374b2sqlk9ldb7xp85mk60h0j3fg8f7n24yk2h6dr7wv6iw1y88"))))
+        (base32 "0drpx6w71vw2ajjswcjj8sma124a2r6rn2xh71lrssq0fi459bcp"))))
     (build-system gnu-build-system)
     (arguments
      (list
