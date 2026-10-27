@@ -150,7 +150,7 @@ read and edit your code, run commands, and delegate subtasks to subagents.")
 (define-public antigravity
   (package
     (name "antigravity")
-    (version "1.4.7")
+    (version "1.4.8")
     (source
      (if (aarch64-build?)
          (origin
@@ -159,14 +159,14 @@ read and edit your code, run commands, and delegate subtasks to subagents.")
                  "https://github.com/google-antigravity/antigravity-cli/"
                  "releases/download/" version "/agy_cli_linux_arm64.tar.gz"))
            (sha256
-            (base32 "1mg1420vy079f3x7c8jb6x1dqsq8r3wvs7gsk02nhzv4ny8wfwxj")))
+            (base32 "100c8pcnvyv232s1dcjnndvpg03s1x1zf97xljwxkkzxpmb4rqxv")))
          (origin
            (method url-fetch)
            (uri (string-append
                  "https://github.com/google-antigravity/antigravity-cli/"
                  "releases/download/" version "/agy_cli_linux_x64.tar.gz"))
            (sha256
-            (base32 "1z6vgyzjbq02fj1yb2784kpplandm0fm22zr325iz6vkprq4xzb7")))))
+            (base32 "0lkcz3m5mf13hq5nplz7mn5f2skhj2hc739is4nzkw44ql7my5lb")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list glibc))
