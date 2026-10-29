@@ -14,6 +14,7 @@
   #:use-module (gnu packages man)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages xorg)
+  #:use-module (gnu packages vulkan)
   #:use-module (faron packages java-runtimes)
   #:export (polymc))
 
