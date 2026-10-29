@@ -22,7 +22,7 @@
 (define-public opencode
   (package
     (name "opencode")
-    (version "2.2.0")
+    (version "2.2.1")
     (source
      (if (aarch64-build?)
          (origin
@@ -31,14 +31,14 @@
                  "https://registry.npmjs.org/@opencode/cli-linux-arm64/-/"
                  "cli-linux-arm64-" version ".tgz"))
            (sha256
-            (base32 "12qb8vvznkq9vvfwdq8hp2mlcg00xv02cz686yfzyfna1ly68h3a")))
+            (base32 "02xjsxzpd9pa78p7dlvp341x4v6g28k9b5lyz5rx239igiki5vic")))
          (origin
            (method url-fetch)
            (uri (string-append
                  "https://registry.npmjs.org/@opencode/cli-linux-x64-baseline/-/"
                  "cli-linux-x64-baseline-" version ".tgz"))
            (sha256
-            (base32 "1pw5s7m0l11wzd9sf1vhyydyjwd1ywih6486fa4hg8fjwvxsc55w")))))
+            (base32 "0b29aqvq3sdf4r201sdvhbb9qn6s3ymyf11dj6lpsgg7yh22p7kq")))))
     (build-system gnu-build-system)
     (native-inputs (list patchelf))
     (inputs (list bash glibc (list gcc-14 "lib")))
