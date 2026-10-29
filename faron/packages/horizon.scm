@@ -48,7 +48,7 @@
     (fhs-union
      (map specification->package
           '("vulkan-loader" "mesa" "wayland" "libxcb" "libxkbcommon"
-            "xkeyboard-config" "openjdk" "gcc-toolchain" "nautilus"))
+            "xkeyboard-config" "openjdk" "gcc-toolchain" "nautilus" "eudev"))
      #:name "fhs-union-64"))
    (preserved-env '("^WAYLAND_DISPLAY$" "^XDG_RUNTIME_DIR$"
                     "^DBUS_SESSION_BUS_ADDRESS$" "^XDG_CURRENT_DESKTOP$"))
