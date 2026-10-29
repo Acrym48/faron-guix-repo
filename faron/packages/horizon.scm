@@ -11,7 +11,7 @@
   #:use-module (nonguix multiarch-container)
   #:export (horizon-launcher))
 
-(define %horizon-version "0.2.16")
+(define %horizon-version "0.2.26")
 
 (define horizon-launcher-files
   (package
@@ -22,7 +22,7 @@
             (uri (string-append
                   "https://github.com/ludovic111/horizon/releases/download/launcher@"
                   version "/horizon-launcher-linux-x86_64.tar.gz"))
-            (sha256 (base32 "14yaivj2hayyvh290vf1x4d03wk45v09apncsa9q4gyrz089c7yk"))))
+            (sha256 (base32 "0pa7zyq31h9jf6pa5zpjx9w67dqyjadjqjdcr049zggpsnm69gpf"))))
    (build-system copy-build-system)
    (arguments
     (list #:validate-runpath? #f
