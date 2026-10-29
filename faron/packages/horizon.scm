@@ -13,6 +13,12 @@
 
 (define %horizon-version "0.2.26")
 
+(define horizon-icon
+  (origin
+   (method url-fetch)
+   (uri "https://raw.githubusercontent.com/ludovic111/horizon/main/packaging/icons/hicolor/256x256/apps/horizon.png")
+   (sha256 (base32 "0xv7l3ng9blbd9j1z7phq6q2y55arxdixbpbqcyqwza11awisqm7"))))
+
 (define horizon-launcher-files
   (package
    (name "horizon-launcher-files")
@@ -57,7 +63,6 @@
 (define horizon-container-package
   (nonguix-container->package horizon-container))
 
-;; Внешняя обёртка: выставляет GUIX_SANDBOX_HOME до запуска контейнера.
 (define-public horizon-launcher
   (package
    (inherit horizon-container-package)
@@ -80,7 +85,21 @@
              (lambda (port)
                (format port "#!~a/bin/bash
 export GUIX_SANDBOX_HOME=\"${GUIX_SANDBOX_HOME:-$HOME}\"
-exec ~a \"$@\"
+export app=\"~a\"
+$app desktop-entry --remove
+exec $app \"$@\"
 "
                        #$bash-minimal real)))
-           (chmod dest #o755)))))))
+           (chmod dest #o755)
+	   (let ((apps (string-append #$output "/share/applications"))
+		 (icons (string-append #$output "/share/icons/hicolor/256x256/apps")))
+	     (mkdir-p apps)
+	     (mkdir-p icons)
+	     (copy-file #$horizon-icon
+			(string-append icons "/horizon-launcher.png"))
+	     (make-desktop-entry-file
+	      (string-append apps "/horizon-launcher.desktop")
+	      #:name "Horizon"
+	      #:comment "Install, prepare and play Horizon, Minecraft: Java Edition 26.3 rewritten in Rust"
+	      #:exec "horizon-launcher"
+	      #:categories '("Game")))))))))
