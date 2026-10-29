@@ -7,6 +7,7 @@
   #:use-module (gnu packages audio)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cpp)
+  #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages gl)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages java)
@@ -14,8 +15,9 @@
   #:use-module (gnu packages linux)
   #:use-module (gnu packages man)
   #:use-module (gnu packages qt)
-  #:use-module (gnu packages xorg)
   #:use-module (gnu packages vulkan)
+  #:use-module (gnu packages xdisorg)
+  #:use-module (gnu packages xorg)
   #:use-module (faron packages java-runtimes)
   #:export (polymc))
 
@@ -70,11 +72,17 @@
 							  ;; LWJGL inside the child Minecraft JVM loads
 							  ;; libGL/libX11/libvulkan/libudev & co. via
 							  ;; dlopen, which under Guix can't be found
-							  ;; without LD_LIBRARY_PATH.
+							  ;; without LD_LIBRARY_PATH.  Recent
+							  ;; Minecraft versions create their window
+							  ;; through SDL, which dlopens the Wayland
+							  ;; client libs too.
 							  `("LD_LIBRARY_PATH" ":" prefix
 							    (,(string-append #$mesa "/lib")
 							     ,(string-append #$vulkan-loader "/lib")
 							     ,(string-append #$eudev "/lib")
+							     ,(string-append #$wayland "/lib")
+							     ,(string-append #$libxkbcommon "/lib")
+							     ,(string-append #$libdecor "/lib")
 							     ,(string-append #$libx11 "/lib")
 							     ,(string-append #$libxcursor "/lib")
 							     ,(string-append #$libxrandr "/lib")
@@ -99,6 +107,9 @@
           mesa
           vulkan-loader
           eudev
+          wayland
+          libxkbcommon
+          libdecor
           libx11
           libxcursor
           libxrandr
