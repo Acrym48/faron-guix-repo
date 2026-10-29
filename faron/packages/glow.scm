@@ -507,74 +507,74 @@ output.")
 
 (define-public glow
   (package
-     (name "glow")
-     (version "3.0.0")
-     (source
-       (origin
-	 (method git-fetch)
-	 (uri (git-reference
-	        (url "https://github.com/charmbracelet/glow")
-		(commit "7b2431d4a82428fb477eb4361e11583e1644e9ba")))
-	 (file-name (git-file-name name version))
-	 (sha256
-	   (base32 "05cyh8ccsav348sjs5h6jlzzhk8cid6vqq39qr64vz5jivjvpz5n"))))
-     (build-system go-build-system)
-     (arguments
-       (list
-	 #:import-path "charm.land/glow/v3"
-	 #:install-source? #f
-#:phases
- 	 #~(modify-phases %standard-phases
- 	     (add-after 'fix-embed-files 'materialize-embed-chroma
-	       (lambda _
-		 (with-directory-excursion "src"
-		   (for-each
-		    (lambda (dir)
-		      (for-each
-		       (lambda (file)
-			 (when (eq? 'symlink (stat:type (lstat file)))
-			   (let ((target (readlink file)))
-			     (delete-file file)
-			     (copy-recursively target file))))
-		       (find-files dir)))
-		    (list (string-append "github.com/alecthomas/chroma/v2/lexers/embedded")
-			  (string-append "github.com/alecthomas/chroma/v2/styles"))))))
-	     (replace 'build
-		      (lambda* (#:key import-path outputs #:allow-other-keys)
-		        (invoke "go" "build"
-				"-ldflags=-s -w"
-				"-trimpath"
-				"-o"
-				(string-append (assoc-ref outputs "out") "/bin/glow")
-				import-path))))))
-     (inputs (list go-charm-land-bubbles-v2
-		   go-charm-land-bubbletea-v2
-		   go-charm-land-glamour-v2
-		   go-charm-land-lipgloss-v2
-		   go-github-com-charmbracelet-x-cellbuf-next
-		   go-github-com-charmbracelet-x-editor
-		   go-github-com-atotto-clipboard
-		   go-github-com-caarlos0-env
-		   go-github-com-charmbracelet-log
-		   go-github-com-dustin-go-humanize
-		   go-github-com-fsnotify-fsnotify
-		   go-github-com-mattn-go-runewidth
-		   go-github-com-mitchellh-go-homedir
-		   go-github-com-muesli-gitcha
-		   go-github-com-muesli-go-app-paths
-		   go-github-com-muesli-mango-cobra
-		   go-github-com-muesli-reflow
-		   go-github-com-muesli-mango-pflag
-		   go-github-com-muesli-termenv
-		   go-github-com-sahilm-fuzzy
-		   go-github-com-spf13-cobra
-		   go-github-com-spf13-viper
-		   go-golang-org-x-sys
-		   go-golang-org-x-term
-		   go-golang-org-x-text
-		   go-mvdan-cc-sh-v3))
-     (home-page "https://github.com/charmbracelet/glow")
-     (synopsis "Glow is a terminal based markdown reader designed from the ground up to bring out the beauty—and power—of the CLI.")
-     (description
-       "Use it to discover markdown files, read documentation directly on the command line. Glow will find local markdown files in subdirectories or a local Git repository.")
-     (license license:expat)))
+   (name "glow")
+   (version "3.0.0")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+	   (url "https://github.com/charmbracelet/glow")
+	   (commit "7b2431d4a82428fb477eb4361e11583e1644e9ba")))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32 "05cyh8ccsav348sjs5h6jlzzhk8cid6vqq39qr64vz5jivjvpz5n"))))
+   (build-system go-build-system)
+   (arguments
+    (list
+     #:import-path "charm.land/glow/v3"
+     #:install-source? #f
+     #:phases
+     #~(modify-phases %standard-phases
+ 		      (add-after 'fix-embed-files 'materialize-embed-chroma
+				 (lambda _
+				   (with-directory-excursion "src"
+							     (for-each
+							      (lambda (dir)
+								(for-each
+								 (lambda (file)
+								   (when (eq? 'symlink (stat:type (lstat file)))
+								     (let ((target (readlink file)))
+								       (delete-file file)
+								       (copy-recursively target file))))
+								 (find-files dir)))
+							      (list (string-append "github.com/alecthomas/chroma/v2/lexers/embedded")
+								    (string-append "github.com/alecthomas/chroma/v2/styles"))))))
+		      (replace 'build
+			       (lambda* (#:key import-path outputs #:allow-other-keys)
+					(invoke "go" "build"
+						"-ldflags=-s -w"
+						"-trimpath"
+						"-o"
+						(string-append (assoc-ref outputs "out") "/bin/glow")
+						import-path))))))
+   (inputs (list go-charm-land-bubbles-v2
+		 go-charm-land-bubbletea-v2
+		 go-charm-land-glamour-v2
+		 go-charm-land-lipgloss-v2
+		 go-github-com-charmbracelet-x-cellbuf-next
+		 go-github-com-charmbracelet-x-editor
+		 go-github-com-atotto-clipboard
+		 go-github-com-caarlos0-env-v11
+		 go-github-com-charmbracelet-log
+		 go-github-com-dustin-go-humanize
+		 go-github-com-fsnotify-fsnotify
+		 go-github-com-mattn-go-runewidth
+		 go-github-com-mitchellh-go-homedir
+		 go-github-com-muesli-gitcha
+		 go-github-com-muesli-go-app-paths
+		 go-github-com-muesli-mango-cobra
+		 go-github-com-muesli-reflow
+		 go-github-com-muesli-mango-pflag
+		 go-github-com-muesli-termenv
+		 go-github-com-sahilm-fuzzy
+		 go-github-com-spf13-cobra
+		 go-github-com-spf13-viper
+		 go-golang-org-x-sys
+		 go-golang-org-x-term
+		 go-golang-org-x-text
+		 go-mvdan-cc-sh-v3))
+   (home-page "https://github.com/charmbracelet/glow")
+   (synopsis "Glow is a terminal based markdown reader designed from the ground up to bring out the beauty—and power—of the CLI.")
+   (description
+    "Use it to discover markdown files, read documentation directly on the command line. Glow will find local markdown files in subdirectories or a local Git repository.")
+   (license license:expat)))
