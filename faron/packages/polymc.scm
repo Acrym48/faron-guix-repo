@@ -19,92 +19,93 @@
 
 (define-public polymc
   (package
-    (name "polymc")
-    (version "8.1")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/PolyMC/PolyMC")
-             (commit "5ad72dda606a7e8a3a3c7adae6de7053597fcc23")
-             ;; Сабмодули (libnbtplusplus, quazip, tomlplusplus,
-             ;; ghc-filesystem) нужны для сборки.
-             (recursive? #t)))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "1z8j5f5ghayfl9kvr68c5f6j1rb3rd8ngi0cds2n3msim2hf0k8z"))))
-    (build-system cmake-build-system)
-    (arguments
-     (list
-      #:modules '((guix build cmake-build-system)
-                  (guix build qt-utils)
-                  (guix build utils))
-      #:imported-modules `(,@%cmake-build-system-modules
-                           (guix build qt-utils))
-      #:configure-flags
-      #~(list "-DLauncher_APP_BINARY_NAME=polymc"
-              "-DLauncher_QT_VERSION_MAJOR=6")
-#:phases
-      #~(modify-phases %standard-phases
-          (add-after 'install 'qt-wrap
-            (lambda* (#:key inputs outputs #:allow-other-keys)
-              (wrap-all-qt-programs #:inputs inputs
-                                    #:outputs outputs
-                                    #:qtbase #$qtbase)
-              ;; Expose the bundled JDK runtimes on PATH and to PolyMC's Java
-              ;; auto-detection so that it can locate a suitable Java for any
-              ;; Minecraft version.  PATH only provides bare "java-X" names;
-              ;; POLYMC_JAVA_PATHS feeds the exact java binaries to
-              ;; JavaUtils::FindJavaPaths() so versions 17/21/25 are listed in
-              ;; the launcher's Java settings.
-              (let ((jvm (string-append #$java-runtimes "/_jvm")))
-                (wrap-program (string-append #$output "/bin/polymc")
-                              `("PATH" ":" prefix
-                                (,(string-append #$java-runtimes "/bin")))
-                              `("POLYMC_JAVA_PATHS" ":" prefix
-                                (,(string-append jvm "/17/bin/java")
-                                 ,(string-append jvm "/21/bin/java")
-                                 ,(string-append jvm "/25/bin/java")))
-                              ;; LWJGL inside the child Minecraft JVM loads
-                              ;; libGL/libX11 & co. via dlopen, which under
-                              ;; Guix can't be found without LD_LIBRARY_PATH.
-                              `("LD_LIBRARY_PATH" ":" prefix
-                                (,(string-append #$mesa "/lib")
-                                 ,(string-append #$libx11 "/lib")
-                                 ,(string-append #$libxcursor "/lib")
-                                 ,(string-append #$libxrandr "/lib")
-                                 ,(string-append #$libxinerama "/lib")
-                                 ,(string-append #$libxxf86vm "/lib")
-                                 ,(string-append #$libxi "/lib")
-                                 ,(string-append #$libxext "/lib"))))))))))
-    (native-inputs
-     (list extra-cmake-modules scdoc (list openjdk21 "jdk")))
-    (inputs
-     (list qtbase
-           qt5compat
-           qtsvg
-           qtimageformats
-           qtcharts
-           qtwayland
-           quazip
-           tomlplusplus
-           zlib
-           glfw
-           openal
-           mesa
-           libx11
-           libxcursor
-           libxrandr
-           libxinerama
-           libxxf86vm
-           libxi
-           libxext
-           hicolor-icon-theme
-           java-runtimes))
-    (home-page "https://github.com/PolyMC/PolyMC")
-    (synopsis "Free, open source launcher for Minecraft")
-    (description
-     "PolyMC is a custom launcher for Minecraft that allows you to easily
+   (name "polymc")
+   (version "8.1")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+           (url "https://github.com/PolyMC/PolyMC")
+           (commit "5ad72dda606a7e8a3a3c7adae6de7053597fcc23")
+           ;; Сабмодули (libnbtplusplus, quazip, tomlplusplus,
+           ;; ghc-filesystem) нужны для сборки.
+           (recursive? #t)))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32 "1z8j5f5ghayfl9kvr68c5f6j1rb3rd8ngi0cds2n3msim2hf0k8z"))))
+   (build-system cmake-build-system)
+   (arguments
+    (list
+     #:modules '((guix build cmake-build-system)
+                 (guix build qt-utils)
+                 (guix build utils))
+     #:imported-modules `(,@%cmake-build-system-modules
+                          (guix build qt-utils))
+     #:configure-flags
+     #~(list "-DLauncher_APP_BINARY_NAME=polymc"
+             "-DLauncher_QT_VERSION_MAJOR=6")
+     #:phases
+     #~(modify-phases %standard-phases
+		      (add-after 'install 'qt-wrap
+				 (lambda* (#:key inputs outputs #:allow-other-keys)
+					  (wrap-all-qt-programs #:inputs inputs
+								#:outputs outputs
+								#:qtbase #$qtbase)
+					  ;; Expose the bundled JDK runtimes on PATH and to PolyMC's Java
+					  ;; auto-detection so that it can locate a suitable Java for any
+					  ;; Minecraft version.  PATH only provides bare "java-X" names;
+					  ;; POLYMC_JAVA_PATHS feeds the exact java binaries to
+					  ;; JavaUtils::FindJavaPaths() so versions 17/21/25 are listed in
+					  ;; the launcher's Java settings.
+					  (let ((jvm (string-append #$java-runtimes "/_jvm")))
+					    (wrap-program (string-append #$output "/bin/polymc")
+							  `("PATH" ":" prefix
+							    (,(string-append #$java-runtimes "/bin")))
+							  `("POLYMC_JAVA_PATHS" ":" prefix
+							    (,(string-append jvm "/17/bin/java")
+							     ,(string-append jvm "/21/bin/java")
+							     ,(string-append jvm "/25/bin/java")))
+							  ;; LWJGL inside the child Minecraft JVM loads
+							  ;; libGL/libX11 & co. via dlopen, which under
+							  ;; Guix can't be found without LD_LIBRARY_PATH.
+							  `("LD_LIBRARY_PATH" ":" prefix
+							    (,(string-append #$mesa "/lib")
+							     ,(string-append #$libx11 "/lib")
+							     ,(string-append #$libxcursor "/lib")
+							     ,(string-append #$libxrandr "/lib")
+							     ,(string-append #$libxinerama "/lib")
+							     ,(string-append #$libxxf86vm "/lib")
+							     ,(string-append #$libxi "/lib")
+							     ,(string-append #$libxext "/lib"))))))))))
+   (native-inputs
+    (list extra-cmake-modules scdoc (list openjdk21 "jdk")))
+   (inputs
+    (list qtbase
+          qt5compat
+          qtsvg
+          qtimageformats
+          qtcharts
+          qtwayland
+          quazip
+          tomlplusplus
+          zlib
+          glfw
+          openal
+          mesa
+          libx11
+          libxcursor
+          libxrandr
+          libxinerama
+          libxxf86vm
+          libxi
+          libxext
+          hicolor-icon-theme
+	  vulkan-loader
+          java-runtimes))
+   (home-page "https://github.com/PolyMC/PolyMC")
+   (synopsis "Free, open source launcher for Minecraft")
+   (description
+    "PolyMC is a custom launcher for Minecraft that allows you to easily
 manage multiple installations of Minecraft at once.  It provides a rich
 user interface for managing instances, mods, resource packs and more.")
-    (license license:gpl3)))
+   (license license:gpl3)))
