@@ -101,5 +101,6 @@ exec $app \"$@\"
 	      (string-append apps "/horizon-launcher.desktop")
 	      #:name "Horizon"
 	      #:comment "Install, prepare and play Horizon, Minecraft: Java Edition 26.3 rewritten in Rust"
-	      #:exec "horizon-launcher"
+	      #:exec dest
+	      #:icon "horizon-launcher"
 	      #:categories '("Game")))))))))
