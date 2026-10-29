@@ -11,6 +11,7 @@
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages java)
   #:use-module (gnu packages kde-frameworks)
+  #:use-module (gnu packages linux)
   #:use-module (gnu packages man)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages xorg)
@@ -67,10 +68,13 @@
 							     ,(string-append jvm "/21/bin/java")
 							     ,(string-append jvm "/25/bin/java")))
 							  ;; LWJGL inside the child Minecraft JVM loads
-							  ;; libGL/libX11 & co. via dlopen, which under
-							  ;; Guix can't be found without LD_LIBRARY_PATH.
+							  ;; libGL/libX11/libvulkan/libudev & co. via
+							  ;; dlopen, which under Guix can't be found
+							  ;; without LD_LIBRARY_PATH.
 							  `("LD_LIBRARY_PATH" ":" prefix
 							    (,(string-append #$mesa "/lib")
+							     ,(string-append #$vulkan-loader "/lib")
+							     ,(string-append #$eudev "/lib")
 							     ,(string-append #$libx11 "/lib")
 							     ,(string-append #$libxcursor "/lib")
 							     ,(string-append #$libxrandr "/lib")
@@ -93,6 +97,8 @@
           glfw
           openal
           mesa
+          vulkan-loader
+          eudev
           libx11
           libxcursor
           libxrandr
@@ -101,7 +107,6 @@
           libxi
           libxext
           hicolor-icon-theme
-	  vulkan-loader
           java-runtimes))
    (home-page "https://github.com/PolyMC/PolyMC")
    (synopsis "Free, open source launcher for Minecraft")
