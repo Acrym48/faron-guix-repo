@@ -20,6 +20,7 @@ with personal projects.
 | `horizon` | Rust reimplementation of Minecraft: Java Edition | [horizon-rust/horizon](https://github.com/horizon-rust/horizon) |
 | `onlyoffice-desktopeditors` | Office suite for documents, spreadsheets, and presentations | [ONLYOFFICE/DesktopEditors](https://github.com/ONLYOFFICE/DesktopEditors) |
 | `font-microsoft-times-new-roman` | Times New Roman from the Microsoft core fonts for the web | [corefonts](https://sourceforge.net/projects/corefonts/) |
+| `atto` | Atto Emacs is a minimal functional Emacs in less than 2000 lines of C code. It is derived from Anthony's Editor and uses a buffer-gap to represent the file in memory. | [atto](https://github.com/hughbarney/atto) |
 
 Packages built from source reuse the system Guix libraries. The `glow`
 package is built from the [charm.land/glow/v3](https://github.com/charmbracelet/glow)
