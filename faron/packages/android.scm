@@ -96,4 +96,18 @@ export GUIX_SANDBOX_HOME=\"${GUIX_SANDBOX_HOME:-$HOME}\"
 exec ~a \"$@\"
 "
                        #$bash-minimal real)))
-           (chmod dest #o755)))))))
+           (chmod dest #o755)
+           (let ((apps (string-append #$output "/share/applications"))
+		 (pixmaps (string-append #$output "/share/pixmaps")))
+           (mkdir-p apps)
+	   (mkdir-p pixmaps)
+	   (copy-file (string-append #$android-studio-meta-package
+				     "/opt/android-studio/bin/studio.png")
+		      (string-append pixmaps "/android-studio.png"))
+	   (make-desktop-entry-file
+	    (string-append apps "/android-studio.desktop")
+	    #:name "Android Studio"
+	    #:comment "IDE for Android development"
+	    #:exec dest
+	    #:icon "android-studio"
+	    #:categories '("Development" "IDE")))))))))
