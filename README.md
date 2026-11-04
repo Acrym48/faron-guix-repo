@@ -22,6 +22,7 @@ with personal projects.
 | `font-microsoft-times-new-roman` | Times New Roman from the Microsoft core fonts for the web | [corefonts](https://sourceforge.net/projects/corefonts/) |
 | `atto` | Atto Emacs is a minimal functional Emacs in less than 2000 lines of C code. It is derived from Anthony's Editor and uses a buffer-gap to represent the file in memory. | [atto](https://github.com/hughbarney/atto) |
 | `android-studio` | Android Studio is the official IDE for Android. | [android-studio](https://developer.android.com/studio) |
+| `odin4` | odin4 is a flash tool for Samsung devices. | [odin4](https://github.com/Llucs/odin4) |
 
 Packages built from source reuse the system Guix libraries. The `glow`
 package is built from the [charm.land/glow/v3](https://github.com/charmbracelet/glow)
