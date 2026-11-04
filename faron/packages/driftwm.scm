@@ -27,124 +27,124 @@
 ;; smithay git snapshot.
 (define driftwm-vendor
   (origin
-    (method url-fetch)
-    (uri (string-append "https://github.com/malbiruk/driftwm/releases/download/v"
-                        %driftwm-version "/driftwm-" %driftwm-version
-                        "-vendor.tar.xz"))
-    (sha256
-     (base32 "1rz87hf9mzlajs20f5yibfq1hv527iabvc7c5x720f7h9rxbq62s"))))
+   (method url-fetch)
+   (uri (string-append "https://github.com/malbiruk/driftwm/releases/download/v"
+                       %driftwm-version "/driftwm-" %driftwm-version
+                       "-vendor.tar.xz"))
+   (sha256
+    (base32 "1rz87hf9mzlajs20f5yibfq1hv527iabvc7c5x720f7h9rxbq62s"))))
 
 (define-public driftwm
   (package
-    (name "driftwm")
-    (version %driftwm-version)
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "https://github.com/malbiruk/driftwm/archive/refs/tags/v"
-                           version ".tar.gz"))
-       (file-name (string-append name "-" version ".tar.gz"))
-       (sha256
-        (base32 "1by046kjsdnip4g67i6j7f5sd2prka9n617qlp1p4z2fn7mj2jrc"))))
-    (build-system gnu-build-system)
-    (arguments
-     (list
-      #:tests? #f ; test suite needs foot, a GPU-backed EGL context, etc.
-      #:phases
-      #~(modify-phases %standard-phases
-          (delete 'configure)
-          ;; AFTER the patch-*shebangs phases: they rewrite script shebangs,
-          ;; which breaks cargo's per-file checksums in vendor/
-          ;; (.cargo-checksum.json).  Source scripts (incl.
-          ;; resources/driftwm-session) still get their shebangs patched.
-          (add-after 'patch-generated-file-shebangs 'unpack-vendor
-            (lambda _
-              ;; No top-level directory inside: drops `vendor/' and `.cargo/'.
-              ;; Referenced directly (not via inputs): gexp lowers the origin
-              ;; into the store automatically.
-              (invoke "tar" "xf" #$driftwm-vendor)))
-          (add-after 'unpack 'setup-cargo
-            (lambda _
-              ;; `cargo build --offline' still wants a writable CARGO_HOME.
-              (let ((home (string-append (or (getenv "TMPDIR") "/tmp")
-                                         "/cargo-home")))
-                (mkdir-p home)
-                (setenv "CARGO_HOME" home)
-                (setenv "CARGO_NET_OFFLINE" "true"))))
-          (replace 'build
-            (lambda _
-              (invoke "cargo" "build" "--offline" "--locked" "--release"
-                      (string-append "--jobs="
-                                     (number->string (parallel-job-count))))))
-          (replace 'install
-            (lambda _
-              (let* ((bin (string-append #$output "/bin"))
-                     (doc (string-append #$output "/share/doc/"
-                                         #$name "-" #$version)))
-                (install-file "target/release/driftwm" bin)
-                (chmod (string-append bin "/driftwm") #o755)
-                (install-file "resources/driftwm-session" bin)
-                (chmod (string-append bin "/driftwm-session") #o755)
-                ;; Display-manager entry, portals config, systemd user units.
-                (let ((desktop (string-append #$output
-                                              "/share/wayland-sessions/driftwm.desktop")))
-                  (install-file "resources/driftwm.desktop"
-                                (dirname desktop))
-                  (substitute* desktop
-                    (("Exec=driftwm-session")
-                     (string-append "Exec=" #$output "/bin/driftwm-session"))))
-                (install-file "resources/driftwm-portals.conf"
-                              (string-append #$output "/share/xdg-desktop-portal"))
-                (let ((unit-dir (string-append #$output "/lib/systemd/user")))
-                  (install-file "resources/driftwm.service" unit-dir)
-                  (install-file "resources/driftwm-shutdown.target" unit-dir)
-                  (substitute* (string-append unit-dir "/driftwm.service")
-                    (("ExecStart=driftwm")
-                     (string-append "ExecStart=" #$output "/bin/driftwm"))))
-                ;; Reference config and example shader wallpapers.
-                (install-file "config.reference.toml" doc)
-                (copy-recursively "extras/wallpapers"
-                                  (string-append #$output
-                                                 "/share/driftwm/wallpapers"))
-                ;; dlopen'd libs (EGL/GL, gbm, input, seat, udev, X11, ...)
-                ;; are not on the loader path in the store; expose them.
-                (let ((run-libs '("mesa" "libglvnd" "wayland" "libseat"
-                                  "libdisplay-info" "libinput-minimal" "eudev"
-                                  "libdrm" "libxkbcommon" "pixman" "libx11"
-                                  "libxcursor" "libxrandr" "libxi" "libxcb")))
-                  (wrap-program (string-append bin "/driftwm")
-                    #:sh #$(file-append bash "/bin/sh")
-                    `("LD_LIBRARY_PATH" ":" prefix
-                      ,(map (lambda (lib)
-                              (string-append (assoc-ref %build-inputs lib)
-                                             "/lib"))
-                            run-libs))))))))))
-    (native-inputs
-     (list pkg-config
-           rust
-           (list rust "cargo")))
-    (inputs
-     (list bash
-           eudev
-           libdisplay-info
-           libdrm
-           libglvnd
-           libinput-minimal
-           libseat
-           libx11
-           libxcb
-           libxcursor
-           libxi
-           libxkbcommon
-           libxrandr
-           mesa
-           pixman
-           wayland))
-    (home-page "https://github.com/malbiruk/driftwm")
-    (synopsis "Trackpad-first infinite canvas Wayland compositor")
-    (description
-     "An infinite-canvas Wayland compositor where windows live at their native
+   (name "driftwm")
+   (version %driftwm-version)
+   (source
+    (origin
+     (method url-fetch)
+     (uri (string-append "https://github.com/malbiruk/driftwm/archive/refs/tags/v"
+                         version ".tar.gz"))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1by046kjsdnip4g67i6j7f5sd2prka9n617qlp1p4z2fn7mj2jrc"))))
+   (build-system gnu-build-system)
+   (arguments
+    (list
+     #:tests? #f ; test suite needs foot, a GPU-backed EGL context, etc.
+     #:phases
+     #~(modify-phases %standard-phases
+         (delete 'configure)
+         ;; AFTER the patch-*shebangs phases: they rewrite script shebangs,
+         ;; which breaks cargo's per-file checksums in vendor/
+         ;; (.cargo-checksum.json).  Source scripts (incl.
+         ;; resources/driftwm-session) still get their shebangs patched.
+         (add-after 'patch-generated-file-shebangs 'unpack-vendor
+           (lambda _
+             ;; No top-level directory inside: drops `vendor/' and `.cargo/'.
+             ;; Referenced directly (not via inputs): gexp lowers the origin
+             ;; into the store automatically.
+             (invoke "tar" "xf" #$driftwm-vendor)))
+         (add-after 'unpack 'setup-cargo
+           (lambda _
+             ;; `cargo build --offline' still wants a writable CARGO_HOME.
+             (let ((home (string-append (or (getenv "TMPDIR") "/tmp")
+                                        "/cargo-home")))
+               (mkdir-p home)
+               (setenv "CARGO_HOME" home)
+               (setenv "CARGO_NET_OFFLINE" "true"))))
+         (replace 'build
+           (lambda _
+             (invoke "cargo" "build" "--offline" "--locked" "--release"
+                     (string-append "--jobs="
+                                    (number->string (parallel-job-count))))))
+         (replace 'install
+           (lambda _
+             (let* ((bin (string-append #$output "/bin"))
+                    (doc (string-append #$output "/share/doc/"
+                                        #$name "-" #$version)))
+               (install-file "target/release/driftwm" bin)
+               (chmod (string-append bin "/driftwm") #o755)
+               (install-file "resources/driftwm-session" bin)
+               (chmod (string-append bin "/driftwm-session") #o755)
+               ;; Display-manager entry, portals config, systemd user units.
+               (let ((desktop (string-append #$output
+                                             "/share/wayland-sessions/driftwm.desktop")))
+                 (install-file "resources/driftwm.desktop"
+                               (dirname desktop))
+                 (substitute* desktop
+                   (("Exec=driftwm-session")
+                    (string-append "Exec=" #$output "/bin/driftwm-session"))))
+               (install-file "resources/driftwm-portals.conf"
+                             (string-append #$output "/share/xdg-desktop-portal"))
+               (let ((unit-dir (string-append #$output "/lib/systemd/user")))
+                 (install-file "resources/driftwm.service" unit-dir)
+                 (install-file "resources/driftwm-shutdown.target" unit-dir)
+                 (substitute* (string-append unit-dir "/driftwm.service")
+                   (("ExecStart=driftwm")
+                    (string-append "ExecStart=" #$output "/bin/driftwm"))))
+               ;; Reference config and example shader wallpapers.
+               (install-file "config.reference.toml" doc)
+               (copy-recursively "extras/wallpapers"
+                                 (string-append #$output
+                                                "/share/driftwm/wallpapers"))
+               ;; dlopen'd libs (EGL/GL, gbm, input, seat, udev, X11, ...)
+               ;; are not on the loader path in the store; expose them.
+               (let ((run-libs '("mesa" "libglvnd" "wayland" "libseat"
+                                 "libdisplay-info" "libinput-minimal" "eudev"
+                                 "libdrm" "libxkbcommon" "pixman" "libx11"
+                                 "libxcursor" "libxrandr" "libxi" "libxcb")))
+                 (wrap-program (string-append bin "/driftwm")
+                   #:sh #$(file-append bash "/bin/sh")
+                   `("LD_LIBRARY_PATH" ":" prefix
+                     ,(map (lambda (lib)
+                             (string-append (assoc-ref %build-inputs lib)
+                                            "/lib"))
+                           run-libs))))))))))
+   (native-inputs
+    (list pkg-config
+          rust
+          (list rust "cargo")))
+   (inputs
+    (list bash
+          eudev
+          libdisplay-info
+          libdrm
+          libglvnd
+          libinput-minimal
+          libseat
+          libx11
+          libxcb
+          libxcursor
+          libxi
+          libxkbcommon
+          libxrandr
+          mesa
+          pixman
+          wayland))
+   (home-page "https://github.com/malbiruk/driftwm")
+   (synopsis "Trackpad-first infinite canvas Wayland compositor")
+   (description
+    "An infinite-canvas Wayland compositor where windows live at their native
 size on an infinite 2D canvas and the display is a camera viewing it.  Windows
 snap together into implicit groups when moved close, with trackpad-first pan,
 zoom, and gesture navigation.  It is built on Smithay.")
-    (license license:gpl3+)))
+   (license license:gpl3+)))

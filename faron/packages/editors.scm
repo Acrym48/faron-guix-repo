@@ -6,12 +6,15 @@
   #:use-module (guix utils)
   #:use-module (guix git-download)
   #:use-module (guix build-system gnu)
-  #:use-module ((guix licenses) #:prefix license:))
+  #:use-module ((guix licenses) #:prefix license:)
+  #:export (atto))
+
+(define %atto-version "1.22")
 
 (define-public atto
   (package
    (name "atto")
-   (version "1.22")   
+   (version %atto-version)
    (source
     (origin
      (method git-fetch)
@@ -27,14 +30,14 @@
      #:tests? #f
      #:make-flags
      #~(list (string-append "CC=clang")
-	     (string-append "CXX=clang++")
+             (string-append "CXX=clang++")
              (string-append "PREFIX=" #$output))
      #:phases
      #~(modify-phases %standard-phases
-		      (delete 'configure)
-		      (replace 'install
-			       (lambda _
-				 (install-file "atto" (string-append #$output "/bin")))))))
+         (delete 'configure)
+         (replace 'install
+           (lambda _
+             (install-file "atto" (string-append #$output "/bin")))))))
    (native-inputs (list ncurses clang-toolchain))
    (inputs '())
    (home-page "https://github.com/hughbarney/atto")

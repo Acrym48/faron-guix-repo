@@ -36,10 +36,10 @@
           #:install-plan #~'(("horizon-launcher" "bin/"))
           #:phases
           #~(modify-phases %standard-phases
-			   (add-after 'install 'chmod
-				      (lambda _
-					(chmod (string-append #$output "/bin/horizon-launcher")
-					       #o755))))))
+              (add-after 'install 'chmod
+                (lambda _
+                  (chmod (string-append #$output "/bin/horizon-launcher")
+                         #o755))))))
    (home-page "https://github.com/ludovic111/horizon")
    (synopsis "Horizon launcher")
    (description "Launcher for Horizon, a Rust rewrite of Minecraft.")
@@ -91,16 +91,16 @@ exec $app \"$@\"
 "
                        #$bash-minimal real)))
            (chmod dest #o755)
-	   (let ((apps (string-append #$output "/share/applications"))
-		 (icons (string-append #$output "/share/icons/hicolor/256x256/apps")))
-	     (mkdir-p apps)
-	     (mkdir-p icons)
-	     (copy-file #$horizon-icon
-			(string-append icons "/horizon-launcher.png"))
-	     (make-desktop-entry-file
-	      (string-append apps "/horizon-launcher.desktop")
-	      #:name "Horizon"
-	      #:comment "Install, prepare and play Horizon, Minecraft: Java Edition 26.3 rewritten in Rust"
-	      #:exec dest
-	      #:icon "horizon-launcher"
-	      #:categories '("Game")))))))))
+           (let ((apps (string-append #$output "/share/applications"))
+                 (icons (string-append #$output "/share/icons/hicolor/256x256/apps")))
+             (mkdir-p apps)
+             (mkdir-p icons)
+             (copy-file #$horizon-icon
+                        (string-append icons "/horizon-launcher.png"))
+             (make-desktop-entry-file
+              (string-append apps "/horizon-launcher.desktop")
+              #:name "Horizon"
+              #:comment "Install, prepare and play Horizon, Minecraft: Java Edition 26.3 rewritten in Rust"
+              #:exec dest
+              #:icon "horizon-launcher"
+              #:categories '("Game")))))))))

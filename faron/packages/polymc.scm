@@ -21,10 +21,12 @@
   #:use-module (faron packages java-runtimes)
   #:export (polymc))
 
+(define %polymc-version "8.1")
+
 (define-public polymc
   (package
    (name "polymc")
-   (version "8.1")
+   (version %polymc-version)
    (source
     (origin
      (method git-fetch)
@@ -50,46 +52,46 @@
              "-DLauncher_QT_VERSION_MAJOR=6")
      #:phases
      #~(modify-phases %standard-phases
-		      (add-after 'install 'qt-wrap
-				 (lambda* (#:key inputs outputs #:allow-other-keys)
-					  (wrap-all-qt-programs #:inputs inputs
-								#:outputs outputs
-								#:qtbase #$qtbase)
-					  ;; Expose the bundled JDK runtimes on PATH and to PolyMC's Java
-					  ;; auto-detection so that it can locate a suitable Java for any
-					  ;; Minecraft version.  PATH only provides bare "java-X" names;
-					  ;; POLYMC_JAVA_PATHS feeds the exact java binaries to
-					  ;; JavaUtils::FindJavaPaths() so versions 17/21/25 are listed in
-					  ;; the launcher's Java settings.
-					  (let ((jvm (string-append #$java-runtimes "/_jvm")))
-					    (wrap-program (string-append #$output "/bin/polymc")
-							  `("PATH" ":" prefix
-							    (,(string-append #$java-runtimes "/bin")))
-							  `("POLYMC_JAVA_PATHS" ":" prefix
-							    (,(string-append jvm "/17/bin/java")
-							     ,(string-append jvm "/21/bin/java")
-							     ,(string-append jvm "/25/bin/java")))
-							  ;; LWJGL inside the child Minecraft JVM loads
-							  ;; libGL/libX11/libvulkan/libudev & co. via
-							  ;; dlopen, which under Guix can't be found
-							  ;; without LD_LIBRARY_PATH.  Recent
-							  ;; Minecraft versions create their window
-							  ;; through SDL, which dlopens the Wayland
-							  ;; client libs too.
-							  `("LD_LIBRARY_PATH" ":" prefix
-							    (,(string-append #$mesa "/lib")
-							     ,(string-append #$vulkan-loader "/lib")
-							     ,(string-append #$eudev "/lib")
-							     ,(string-append #$wayland "/lib")
-							     ,(string-append #$libxkbcommon "/lib")
-							     ,(string-append #$libdecor "/lib")
-							     ,(string-append #$libx11 "/lib")
-							     ,(string-append #$libxcursor "/lib")
-							     ,(string-append #$libxrandr "/lib")
-							     ,(string-append #$libxinerama "/lib")
-							     ,(string-append #$libxxf86vm "/lib")
-							     ,(string-append #$libxi "/lib")
-							     ,(string-append #$libxext "/lib"))))))))))
+         (add-after 'install 'qt-wrap
+           (lambda* (#:key inputs outputs #:allow-other-keys)
+             (wrap-all-qt-programs #:inputs inputs
+                                   #:outputs outputs
+                                   #:qtbase #$qtbase)
+             ;; Expose the bundled JDK runtimes on PATH and to PolyMC's Java
+             ;; auto-detection so that it can locate a suitable Java for any
+             ;; Minecraft version.  PATH only provides bare "java-X" names;
+             ;; POLYMC_JAVA_PATHS feeds the exact java binaries to
+             ;; JavaUtils::FindJavaPaths() so versions 17/21/25 are listed in
+             ;; the launcher's Java settings.
+             (let ((jvm (string-append #$java-runtimes "/_jvm")))
+               (wrap-program (string-append #$output "/bin/polymc")
+                             `("PATH" ":" prefix
+                               (,(string-append #$java-runtimes "/bin")))
+                             `("POLYMC_JAVA_PATHS" ":" prefix
+                               (,(string-append jvm "/17/bin/java")
+                                ,(string-append jvm "/21/bin/java")
+                                ,(string-append jvm "/25/bin/java")))
+                             ;; LWJGL inside the child Minecraft JVM loads
+                             ;; libGL/libX11/libvulkan/libudev & co. via
+                             ;; dlopen, which under Guix can't be found
+                             ;; without LD_LIBRARY_PATH.  Recent
+                             ;; Minecraft versions create their window
+                             ;; through SDL, which dlopens the Wayland
+                             ;; client libs too.
+                             `("LD_LIBRARY_PATH" ":" prefix
+                               (,(string-append #$mesa "/lib")
+                                ,(string-append #$vulkan-loader "/lib")
+                                ,(string-append #$eudev "/lib")
+                                ,(string-append #$wayland "/lib")
+                                ,(string-append #$libxkbcommon "/lib")
+                                ,(string-append #$libdecor "/lib")
+                                ,(string-append #$libx11 "/lib")
+                                ,(string-append #$libxcursor "/lib")
+                                ,(string-append #$libxrandr "/lib")
+                                ,(string-append #$libxinerama "/lib")
+                                ,(string-append #$libxxf86vm "/lib")
+                                ,(string-append #$libxi "/lib")
+                                ,(string-append #$libxext "/lib"))))))))))
    (native-inputs
     (list extra-cmake-modules scdoc (list openjdk21 "jdk")))
    (inputs

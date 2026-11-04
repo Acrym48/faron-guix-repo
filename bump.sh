@@ -89,21 +89,46 @@ require_ver() { # <pkg> <ver>
 }
 newer() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1)" = "$2" ]; }
 
-# текущая (version "X") пакета <pkg> в файле <file>
+# текущая версия пакета <pkg> в файле <file>
+# поддерживает и inline (version "X") и (version %VAR)
 current_version() { # <file> <pkg>
-    sed -n "/(name \"$2\")/,/(version/p" "$1" \
+    local file="$1" pkg="$2"
+    # сначала ищем (define %xxx-version "X") в файле
+    local var_ver
+    var_ver=$(sed -n "/(define-public $pkg\b/,/(version/p" "$file" \
+        | sed -n 's/.*(version\s*%\([^)]*\))/\1/p' | head -1)
+    if [ -n "$var_ver" ]; then
+        # версия через переменную — достаём значение переменной
+        sed -n "s/.*(define %$var_ver \"\\([^\"]*\\)\").*/\\1/p" "$file" | head -1
+        return
+    fi
+    # иначе inline version
+    sed -n "/(name \"$pkg\")/,/(version/p" "$file" \
         | sed -n 's/.*(version "\([^"]*\)").*/\1/p' | head -1
 }
 
-# заменить (version "OLD") -> (version "NEW") в файле
+# заменить версию: поддерживает inline и через переменную
 set_version() { # <file> <old> <new>
     python3 - "$1" "$2" "$3" <<'EOF'
-import sys
+import sys, re
 path, old, new = sys.argv[1], sys.argv[2], sys.argv[3]
 s = open(path).read()
-a, b = f'(version "{old}")', f'(version "{new}")'
-assert s.count(a) == 1, f"version {old} found {s.count(a)} times in {path}"
-open(path, "w").write(s.replace(a, b))
+# 1) пробуем inline (version "OLD")
+a = f'(version "{old}")'
+b = f'(version "{new}")'
+if s.count(a) == 1:
+    open(path, "w").write(s.replace(a, b))
+    sys.exit(0)
+# 2) пробуем (version %VAR) — ищем define переменной и меняем её
+m = re.search(r'\(version\s+%([^)]+)\)', s)
+if m:
+    var = m.group(1)
+    a2 = f'(define %{var} "{old}")'
+    b2 = f'(define %{var} "{new}")'
+    if s.count(a2) == 1:
+        open(path, "w").write(s.replace(a2, b2))
+        sys.exit(0)
+raise SystemExit(f"version {old} not found uniquely in {path}")
 EOF
 }
 
