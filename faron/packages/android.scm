@@ -9,12 +9,13 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages elf)
   #:use-module (gnu packages libusb)
+  #:use-module (gnu packages qt)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages bash)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (nonguix licenses)
   #:use-module (nonguix multiarch-container)
-  #:export (android-studio))
+  #:export (android-studio odin4-gui))
 
 (define (aarch64-build?)
   (string-prefix? "aarch64"
@@ -134,7 +135,7 @@ exec ~a \"$@\"
 	 (method url-fetch)
 	 (uri (string-append
 	       "https://github.com/Llucs/odin4/releases/download/v"
-	       varsion
+	       version
 	       "/odin4_arm64_"
 	       version
 	       "-"
@@ -177,12 +178,95 @@ exec ~a \"$@\"
 					   "--set-interpreter"
 					   #$(if (aarch64-build?)
 						 (file-append glibc
-							      "/lib/ldd-linux-aarch64.so.1")
+							      "/lib/ld-linux-aarch64.so.1")
 						 (file-append glibc
 							      "/lib/ld-linux-x86-64.so.2"))
 					   "--set-rpath"
 					   (string-append #$libusb "/lib:" #$gcc-14:lib "/lib")
 					   odin4-file)))))))
+   (synopsis "odin4 is a flash tool for Samsung devices.")
+   (description "odin4 is a flash tool for Samsung devices.")
+   (home-page "https://github.com/Llucs/odin4")
+   (license license:asl2.0)))
+
+(define odin4-gui-icon
+  (origin
+   (method url-fetch)
+   (uri "https://raw.githubusercontent.com/Llucs/odin4/main/docs/assets/logo.png")
+   (sha256 (base32 "11z1mg9z3zwl4dw1nfj4izza9xdc211kx83fqm17wzr0065ikqp3"))))
+
+(define-public odin4-gui
+  (package
+   (name "odin4-gui")
+   (version %odin4-version)
+   (source
+    (if (aarch64-build?)
+	(origin
+	 (method url-fetch)
+	 (uri (string-append
+	       "https://github.com/Llucs/odin4/releases/download/v"
+	       version
+	       "/odin4-gui_arm64_"
+	       version
+	       "-"
+	       %odin4-id))
+	 (file-name (string-append "odin4-gui-" version))
+	 (sha256 (base32 "1m2s62s42lj9d7k3knahbf4lj5kl79n32fa971b7ljpdaxxjg2r3")))
+	(origin
+	 (method url-fetch)
+	 (uri (string-append
+	       "https://github.com/Llucs/odin4/releases/download/v"
+	       version
+	       "/odin4-gui_x86_64_"
+	       version
+	       "-"
+	       %odin4-id))
+	 (file-name (string-append "odin4-gui-" version))
+	 (sha256 (base32 "15zmqaccn9imcxn0zr15nzyqyg5zp29jr7rpn4g85hcwwdqwhz73")))))
+   (build-system gnu-build-system)
+   (native-inputs (list patchelf))
+   (inputs (list libusb qtbase glibc (list gcc-14 "lib")))
+   (arguments
+    (list
+     #:phases
+     #~(modify-phases %standard-phases
+		      (delete 'configure)
+		      (delete 'build)
+		      (delete 'check)
+		      (delete 'validate-runpath)
+		      (delete 'strip)
+		      (delete 'make-dynamic-linker-cache)
+		      (replace 'install
+			       (lambda _
+				 (let* ((bin (string-append #$output "/bin"))
+					(odin4-gui-file (string-append bin "/odin4-gui"))
+					(src (assoc-ref %build-inputs "source")))
+				   (mkdir-p bin)
+				   (copy-file src odin4-gui-file)
+				   (chmod odin4-gui-file #o755)
+				   (invoke "patchelf"
+					   "--set-interpreter"
+					   #$(if (aarch64-build?)
+						 (file-append glibc
+							      "/lib/ld-linux-aarch64.so.1")
+						 (file-append glibc
+							      "/lib/ld-linux-x86-64.so.2"))
+					   "--set-rpath"
+					   (string-append #$libusb "/lib:" #$gcc-14:lib "/lib:" #$qtbase "/lib")
+					   odin4-gui-file))))
+		      (add-after 'install 'install-desktop-file
+				 (lambda* (#:key outputs #:allow-other-keys)
+					  (let* ((out (assoc-ref outputs "out"))
+						 (dest (string-append #$output "/bin/odin-gui"))
+						 (icons (string-append out "/share/icons/pixmaps")))
+					    (mkdir-p icons)
+					    (copy-file #$odin4-gui-icon (string-append icons "/odin4-gui.png"))
+					    (make-desktop-entry-file
+					     (string-append out "/share/applications/odin4-gui.desktop")
+					     #:name "Odin4 gui"
+					     #:exec dest
+					     #:icon "odin4-gui"
+					     #:categories '("Utility"))))))))
    (synopsis "odin4 is a flash tool for Samsung devices.")
    (description "odin4 is a flash tool for Samsung devices.")
    (home-page "https://github.com/Llucs/odin4")
