@@ -1,6 +1,8 @@
 (define-module (faron packages android)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix git-download)
+  #:use-module (guix build-system meson)
   #:use-module (guix gexp)
   #:use-module (guix build-system copy)
   #:use-module (guix build-system trivial)
@@ -8,6 +10,12 @@
   #:use-module (gnu packages)
   #:use-module (gnu packages base)
   #:use-module (gnu packages elf)
+  #:use-module (gnu packages android)
+  #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages sdl)
+  #:use-module (gnu packages video)
+  #:use-module (gnu packages xorg)
+  #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages libusb)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages gcc)
@@ -15,17 +23,19 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (nonguix licenses)
   #:use-module (nonguix multiarch-container)
-  #:export (android-studio odin4-gui))
+  #:export (android-studio odin4 odin4-gui scrcpy))
 
-(define (aarch64-build?)
-  (string-prefix? "aarch64"
-		  (or (%current-target-system) (%current-system))))
+  (define (aarch64-build?)
+    (string-prefix? "aarch64"
+		    (or (%current-target-system) (%current-system))))
 
 (define %android-studio-version "2026.2.2.8")
 (define %android-studio-codename "rabbit2")
 
 (define %odin4-version "7.3.0")
 (define %odin4-id "a46321b")
+
+(define %scrcpy-version "5.0.1")
 
 (define android-studio-meta-package
   (package
@@ -270,4 +280,56 @@ exec ~a \"$@\"
    (synopsis "odin4 is a flash tool for Samsung devices.")
    (description "odin4 is a flash tool for Samsung devices.")
    (home-page "https://github.com/Llucs/odin4")
+   (license license:asl2.0)))
+
+(define scrcpy-server
+  (origin
+   (method url-fetch)
+   (uri (string-append "https://github.com/Genymobile/scrcpy/releases/download/v"
+                       %scrcpy-version "/scrcpy-server-v" %scrcpy-version))
+   (file-name (string-append "scrcpy-server-" %scrcpy-version))
+   (sha256
+    (base32 "0dn57gjn5dizpzbrgf31g969ka9bi0h12d6zx4gj3m8ik3vvckkn"))))
+
+(define-public scrcpy
+  (package
+   (name "scrcpy")
+   (version %scrcpy-version)
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+           (url "https://github.com/Genymobile/scrcpy")
+           (commit (string-append "v" version))))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32 "062fnhm5pj39cxygs276zqw780blfw6rf850r442iw587a63fsyf"))))
+   (build-system meson-build-system)
+   (arguments
+    (list
+     #:configure-flags
+     #~(list (string-append "-Dprebuilt_server=" #$scrcpy-server))
+     #:phases
+     #~(modify-phases %standard-phases
+		      (add-after 'install 'wrap-adb
+				 (lambda* (#:key inputs outputs #:allow-other-keys)					  
+					  (wrap-program (string-append (assoc-ref outputs "out")
+								       "/bin/scrcpy")
+							`("ADB" = (,(search-input-file inputs "/bin/adb")))))))))
+   (native-inputs (list pkg-config))
+   (inputs (list adb
+                 bash-minimal
+                 ffmpeg
+                 libdrm
+                 libusb
+                 libva
+                 sdl3))
+   (home-page "https://github.com/Genymobile/scrcpy")
+   (synopsis "Display and control Android devices over USB or TCP/IP")
+   (description
+    "Scrcpy mirrors the screen of an Android device and lets you control it
+with the computer's keyboard and mouse.  It also supports audio forwarding,
+screen recording, camera mirroring and a virtual V4L2 sink.  Nothing is
+installed on the device: the server part is pushed through adb at start-up.
+The Android server is the prebuilt jar from the upstream release.")
    (license license:asl2.0)))
