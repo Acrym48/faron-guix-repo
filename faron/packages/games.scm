@@ -46,7 +46,7 @@
 (define %umu-libs-64
   '("bash" "coreutils" "grep" "sed" "gawk" "findutils" "which"
     "util-linux" "procps" "python" "gcc-toolchain" "glibc-locales"
-    "zlib" "openssl" "curl" "dbus" "eudev" "libusb"
+    "zlib" "openssl" "nss-certs" "curl" "dbus" "eudev" "libusb"
     "alsa-lib" "pipewire" "pulseaudio"
     "freetype" "fontconfig" "font-dejavu"
     "mesa" "libdrm" "vulkan-loader" "wayland" "libxkbcommon"
@@ -97,6 +97,13 @@
              (lambda (port)
                (format port "#!~a/bin/bash
 export GUIX_SANDBOX_HOME=\"${GUIX_SANDBOX_HOME:-$HOME}\"
+# The host SSL_CERT_FILE/SSL_CERT_DIR point outside the container (store
+# path not shared, /run/current-system absent); override them with the
+# bundle provided by nss-certs inside the FHS container.
+export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+export SSL_CERT_DIR=/etc/ssl/certs
+export CURL_CA_BUNDLE=\"$SSL_CERT_FILE\"
+export GIT_SSL_CAINFO=\"$SSL_CERT_FILE\"
 exec ~a \"$@\"
 "
                        #$bash-minimal real)))
