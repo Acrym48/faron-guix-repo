@@ -14,6 +14,9 @@
 #     --check   только показать current -> latest, ничего не менять
 #     pkg...    ограничить набором пакетов (по умолчанию все выше)
 #
+# По расписанию этот же скрипт запускает .github/workflows/bump.yml
+# (ежедневный cron + ручной запуск, коммиты пушатся в main).
+#
 # Зависимости: curl, jq, python3, git. Для GitHub API без рейт-лимита:
 #   export GITHUB_TOKEN=<token>
 #
@@ -31,7 +34,7 @@ for arg in "$@"; do
     case "$arg" in
         --check) CHECK=1 ;;
         -h|--help)
-            sed -n '2,20p' "$0"
+            sed -n '2,24p' "$0"
             exit 0 ;;
         *) WANT+=("$arg") ;;
     esac
@@ -74,19 +77,35 @@ print(out)'
 
 # скачать URL и выдать nix32 хэш файла
 hash_url() { # <url>
-    local f="$TMP/dl-$(date +%s%N)"
-    curl -fL --max-time 300 -o "$f" "$1"
-    sha256sum "$f" | cut -d' ' -f1 | nix32
+    local f="$TMP/dl-$(date +%s%N)" h
+    curl -fL --max-time 300 -o "$f" "$1" || { rm -f "$f"; return 1; }
+    h="$(sha256sum "$f" | cut -d' ' -f1 | nix32)" || { rm -f "$f"; return 1; }
+    require_hash hash_url "$h" || { rm -f "$f"; return 1; }
     rm -f "$f"
+    printf '%s' "$h"
 }
 
-# пустая/битая версия из API — не продолжать, а пропустить пакет
+# пустая/битая версия из API — не продолжать, а пропустить пакет.
+# Раньше HTML-страница 302 с /latest принималась как версия: curl без -L
+# отдавал тело редиректа с кодом 0, и бамп коммитил мусор.
 require_ver() { # <pkg> <ver>
-    if [ -z "${2:-}" ] || [ "$2" = "null" ]; then
-        echo "$1: не смог узнать версию из апстрима" >&2
+    local pkg="$1" ver="${2:-}"
+    if [ -z "$ver" ] || [ "$ver" = "null" ] ||
+       [ "${#ver}" -gt 32 ] ||
+       ! [[ "$ver" =~ ^[0-9]+(\.[0-9A-Za-z-]+)*$ ]]; then
+        echo "$pkg: не смог узнать версию из апстрима (получено: $ver)" >&2
         return 1
     fi
 }
+# Хэш должен быть ровно 52 символами nix-base32. Иначе лучше пропустить
+# пакет, чем закоммитить (base32 "") — как это случилось с kimi-code.
+require_hash() { # <pkg> <hash>
+    if ! [[ "${2:-}" =~ ^[0-9abcdfghijklmnpqrsvwxyz]{52}$ ]]; then
+        echo "$1: не удалось посчитать sha256 (получено: ${2:-<пусто>})" >&2
+        return 1
+    fi
+}
+
 newer() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1)" = "$2" ]; }
 
 # текущая версия пакета <pkg> в файле <file>
@@ -107,28 +126,38 @@ current_version() { # <file> <pkg>
         | sed -n 's/.*(version "\([^"]*\)").*/\1/p' | head -1
 }
 
-# заменить версию: поддерживает inline и через переменную
-set_version() { # <file> <old> <new>
-    python3 - "$1" "$2" "$3" <<'EOF'
+# заменить версию: поддерживает inline и через переменную.
+# Важно: ищем (version ...) внутри блока define-public <pkg>, иначе первая
+# же %-переменная в файле (например %opencode-version) перезапишется не у того
+# пакета — этим были сломаны claude-code/antigravity/qwen-code/kimi-code.
+set_version() { # <file> <pkg> <old> <new>
+    python3 - "$1" "$2" "$3" "$4" <<'EOF'
 import sys, re
-path, old, new = sys.argv[1], sys.argv[2], sys.argv[3]
+path, pkg, old, new = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 s = open(path).read()
-# 1) пробуем inline (version "OLD")
+m = re.search(r"\(define-public\s+" + re.escape(pkg) + r"\b", s)
+if not m:
+    raise SystemExit(f"package {pkg} not found in {path}")
+nxt = re.search(r"\(define-public\s", s[m.end():])
+end = m.end() + nxt.start() if nxt else len(s)
+blk = s[m.start():end]
+# 1) inline (version "OLD") внутри блока пакета
 a = f'(version "{old}")'
 b = f'(version "{new}")'
-if s.count(a) == 1:
-    open(path, "w").write(s.replace(a, b))
-    sys.exit(0)
-# 2) пробуем (version %VAR) — ищем define переменной и меняем её
-m = re.search(r'\(version\s+%([^)]+)\)', s)
-if m:
-    var = m.group(1)
+if blk.count(a) == 1:
+    blk = blk.replace(a, b)
+else:
+    # 2) (version %VAR) — меняем define именно этой переменной
+    vm = re.search(r'\(version\s+%([^)]+)\)', blk)
+    if not vm:
+        raise SystemExit(f"no version found for {pkg} in {path}")
+    var = vm.group(1)
     a2 = f'(define %{var} "{old}")'
     b2 = f'(define %{var} "{new}")'
-    if s.count(a2) == 1:
-        open(path, "w").write(s.replace(a2, b2))
-        sys.exit(0)
-raise SystemExit(f"version {old} not found uniquely in {path}")
+    if s.count(a2) != 1:
+        raise SystemExit(f"version {old} not found uniquely in {path}")
+    s = s.replace(a2, b2)
+open(path, "w").write(s[:m.start()] + blk + s[end:])
 EOF
 }
 
@@ -138,6 +167,9 @@ set_hashes() { # <file> <pkg> <arm32> <x64_32>
     python3 - "$1" "$2" "$3" "$4" <<'EOF'
 import re, sys
 path, pkg, arm, x64 = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+for name, h in (("arm64", arm), ("x64", x64)):
+    if not re.fullmatch(r"[0-9abcdfghijklmnpqrsvwxyz]{52}", h):
+        raise SystemExit(f"{pkg}: bad {name} hash: {h!r}")
 s = open(path).read()
 m = re.search(r"\(define-public " + re.escape(pkg) + r"\b", s)
 assert m, f"package {pkg} not found in {path}"
@@ -184,8 +216,8 @@ github_bump() { # <pkg> <file> <repo> <tag_re> <strip_v:0|1> <url_template> <arm
     h_arm="$(hash_url "$url_arm")"
     echo "$pkg: качаю x64..."
     h_x64="$(hash_url "$url_x64")"
-    set_version "$file" "$cur" "$ver"
-    set_hashes "$file" "$pkg" "$h_arm" "$h_x64"
+    set_version "$file" "$pkg" "$cur" "$ver" || return 1
+    set_hashes "$file" "$pkg" "$h_arm" "$h_x64" || return 1
     commit_bump "$file" "$pkg" "$cur" "$ver"
 }
 
@@ -218,8 +250,8 @@ bump_claude() {
         if [ "$plat" = linux-arm64 ]; then h_arm="$(printf '%s' "$sum" | nix32)"
         else h_x64="$(printf '%s' "$sum" | nix32)"; fi
     done
-    set_version "$AI" "$cur" "$ver"
-    set_hashes "$AI" claude-code "$h_arm" "$h_x64"
+    set_version "$AI" "claude-code" "$cur" "$ver" || return 1
+    set_hashes "$AI" claude-code "$h_arm" "$h_x64" || return 1
     commit_bump "$AI" claude-code "$cur" "$ver"
 }
 
@@ -239,27 +271,37 @@ bump_opencode() {
     h_arm="$(hash_url "https://registry.npmjs.org/@opencode/cli-linux-arm64/-/cli-linux-arm64-$ver.tgz")"
     echo "opencode: качаю x64..."
     h_x64="$(hash_url "https://registry.npmjs.org/@opencode/cli-linux-x64-baseline/-/cli-linux-x64-baseline-$ver.tgz")"
-    set_version "$AI" "$cur" "$ver"
-    set_hashes "$AI" opencode "$h_arm" "$h_x64"
+    set_version "$AI" "opencode" "$cur" "$ver" || return 1
+    set_hashes "$AI" opencode "$h_arm" "$h_x64" || return 1
     commit_bump "$AI" opencode "$cur" "$ver"
 }
 
-# kimi-code: версия из /latest, бинари — скачать напрямую
+# kimi-code: версия из /kimi-code/latest (НЕ /binaries/latest — тот редиректит
+# на cdn, где /latest уже 404, и curl без -L отдавал тело 302 как "версию").
+# Хэши берём из manifest.json: checksum — это sha256 самих бинарей (сверено
+# с хэшами 0.41.0), скачивать 180 МБ на каждый артефакт не нужно.
 bump_kimi() {
-    local base="https://code.kimi.com/kimi-code/binaries"
-    local cur ver h_arm h_x64
+    local base="https://code.kimi.com/kimi-code"
+    local cur ver manifest ver_manifest sum h_arm h_x64
     cur="$(current_version "$AI" kimi-code)"
-    ver="$(curl -fsS --max-time 30 "$base/latest" | tr -d '[:space:]')"
+    ver="$(curl -fsSL --max-time 30 "$base/latest" | tr -d '[:space:]')" || return 1
     require_ver kimi-code "$ver" || return 1
     echo "kimi-code: $cur -> $ver"
     if [ "$CHECK" = 1 ]; then return 0; fi
     newer "$cur" "$ver" || { echo "kimi-code: актуально"; return 0; }
-    echo "kimi-code: качаю arm64..."
-    h_arm="$(hash_url "$base/$ver/kimi-code-linux-arm64")"
-    echo "kimi-code: качаю x64..."
-    h_x64="$(hash_url "$base/$ver/kimi-code-linux-x64")"
-    set_version "$AI" "$cur" "$ver"
-    set_hashes "$AI" kimi-code "$h_arm" "$h_x64"
+    manifest="$(curl -fsSL --max-time 30 "$base/binaries/$ver/manifest.json")" || return 1
+    ver_manifest="$(printf '%s' "$manifest" | jq -r .version)"
+    [ "$ver_manifest" = "$ver" ] || {
+        echo "kimi-code: version в manifest ($ver_manifest) != latest ($ver)" >&2
+        return 1
+    }
+    for plat in linux-arm64 linux-x64; do
+        sum="$(printf '%s' "$manifest" | jq -r --arg p "$plat" '.platforms[$p].checksum')"
+        if [ "$plat" = linux-arm64 ]; then h_arm="$(printf '%s' "$sum" | nix32)"
+        else h_x64="$(printf '%s' "$sum" | nix32)"; fi
+    done
+    set_version "$AI" "kimi-code" "$cur" "$ver" || return 1
+    set_hashes "$AI" kimi-code "$h_arm" "$h_x64" || return 1
     commit_bump "$AI" kimi-code "$cur" "$ver"
 }
 
