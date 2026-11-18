@@ -1,0 +1,80 @@
+# bump.yml — гоняет bump.sh по расписанию и пушит коммиты вида
+#   bump <pkg> <old> -> <new>
+# прямо в main. Ручной запуск (Actions -> bump -> Run workflow) позволяет
+# ограничить набор пакетов и/или включить режим --check.
+#
+# curl, jq, python3 и git на ubuntu-latest уже есть — ставить нечего.
+# git-fetch пакеты (glow, tg-ws-proxy-go, anilib-cli, polymc) workflow не
+# трогает, как и сам bump.sh: их бампят вручную с `guix hash -r`.
+
+name: bump
+
+on:
+  schedule:
+    - cron: "17 6 * * *" # ежедневно в 06:17 UTC
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "Пакеты через пробел (пусто = все)"
+        required: false
+        default: ""
+      check_only:
+        description: "Только показать current -> latest, ничего не менять"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # push коммитов в main
+
+concurrency:
+  group: bump
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # полная история нужна для осмысленного rebase, если main уехал
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Run bump.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # API без рейт-лимитов
+          CHECK_ONLY: ${{ inputs.check_only }}
+          PACKAGES: ${{ inputs.packages }}
+        run: |
+          args=()
+          if [ "$CHECK_ONLY" = "true" ]; then args+=(--check); fi
+          if [ -n "$PACKAGES" ]; then
+              read -r -a pkgs <<<"$PACKAGES"
+              args+=("${pkgs[@]}")
+          fi
+          ./bump.sh "${args[@]}"
+
+      - name: Summary
+        run: |
+          commits="$(git log --oneline origin/main..HEAD)"
+          {
+              echo "### bump"
+              if [ -n "$commits" ]; then
+                  echo "$commits"
+              else
+                  echo "обновлений нет (всё актуально или --check)"
+              fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Push
+        run: |
+          if ! git push origin main; then
+              echo "push отклонён, пробую rebase"
+              git pull --rebase origin main
+              git push origin main
+          fi
