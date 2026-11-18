@@ -224,14 +224,14 @@ debug, and ship code from the terminal.")
                "https://github.com/QwenLM/qwen-code/releases/download/v"
                version "/qwen-code-linux-arm64.tar.gz"))
          (sha256
-          (base32 "1dwpxsc6nwsnjdw66x4slmsk832xv9cpmm3xb8rrwd3wgnaljjlb")))
+          (base32 "0kdm27kbqqgg9ksi58swnyv2grx0snf3z0cqbq97nfd1wrsq24nj")))
         (origin
          (method url-fetch)
          (uri (string-append
                "https://github.com/QwenLM/qwen-code/releases/download/v"
                version "/qwen-code-linux-x64.tar.gz"))
          (sha256
-          (base32 "0i1xn19mwha04c0na1jifgfcswzp6r89ay867yad729wwcw73pzb")))))
+          (base32 "1yxb0a9bs3q684kgwj0s3q13rjgzmzjl1x3c058lc47wzyqnxdai")))))
    (build-system gnu-build-system)
    (native-inputs (list patchelf))
    (inputs (list glibc (list gcc-14 "lib")))
