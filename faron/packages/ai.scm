@@ -105,7 +105,7 @@ write code in your terminal, IDE, or desktop.")
                version "/linux-arm64/claude"))
          (file-name (string-append "claude-" version))
          (sha256
-          (base32 "1xb1hv9b4219g3gnqnw2kqa0cfim72j84jvh4sfh0pj52y4z4jnw")))
+          (base32 "1y6ghsir4fnnb3vz38lnidhgpjq6kbhhgw4ky44apmd8klpyzw5c")))
         (origin
          (method url-fetch)
          (uri (string-append
@@ -113,7 +113,7 @@ write code in your terminal, IDE, or desktop.")
                version "/linux-x64/claude"))
          (file-name (string-append "claude-" version))
          (sha256
-          (base32 "07fhlp1yx7p4mcjh0sd0mrxvz9lfrzdyrfmz3qs26gnq8777hhag")))))
+          (base32 "1jbalwcn1rm90fwcb9kdjmwl7w2i223r1jx7hs1d7gqlm95p8g1l")))))
    (build-system gnu-build-system)
    (native-inputs (list patchelf))
    (inputs (list glibc))
