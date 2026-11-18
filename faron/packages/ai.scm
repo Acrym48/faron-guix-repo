@@ -297,7 +297,7 @@ with agentic features like auto-memory, skills, subagents and MCP support.")
                version "/kimi-code-linux-arm64"))
          (file-name (string-append "kimi-code-" version))
          (sha256
-          (base32 "1650lig4l5a5lpdzw8g8wsq5s7sq9xajq10ibyly6kb9ywg9na1m")))
+          (base32 "")))
         (origin
          (method url-fetch)
          (uri (string-append
@@ -305,7 +305,7 @@ with agentic features like auto-memory, skills, subagents and MCP support.")
                version "/kimi-code-linux-x64"))
          (file-name (string-append "kimi-code-" version))
          (sha256
-          (base32 "0iwip37vq5dv2k41cfq4nq6z3mlhnmz4lgza8g5r4dzx44xshcah")))))
+          (base32 "")))))
    (build-system gnu-build-system)
    (native-inputs (list patchelf))
    (inputs (list glibc (list gcc-14 "lib")))
