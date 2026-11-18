@@ -123,6 +123,13 @@ packages (`glow` + its Go stack, `tg-ws-proxy-go`, `anilib-cli`,
 `jq`, `python3`, `git`; set `GITHUB_TOKEN` to avoid GitHub API
 rate limits.
 
+The same script runs automatically via the
+[`.github/workflows/bump.yml`](.github/workflows/bump.yml) workflow:
+daily at 06:17 UTC it pushes the resulting `bump ...` commits straight
+to `main` (as `github-actions[bot]`).  It can also be triggered manually
+from the Actions tab with an optional space-separated package list and
+a check-only mode.
+
 ## License
 
 Unless otherwise noted, the channel code is free software licensed under the
