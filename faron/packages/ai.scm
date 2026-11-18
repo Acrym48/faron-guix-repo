@@ -165,14 +165,14 @@ read and edit your code, run commands, and delegate subtasks to subagents.")
                "https://github.com/google-antigravity/antigravity-cli/"
                "releases/download/" version "/agy_cli_linux_arm64.tar.gz"))
          (sha256
-          (base32 "1fjyw2zy2jrmbs22crb56vcdyla2xk6kddn1nsr8l0chracp8yqh")))
+          (base32 "1x391di1nimi5sd7gj7w1qs5i39i6y1vax03ndf6hh1zz0aylkyy")))
         (origin
          (method url-fetch)
          (uri (string-append
                "https://github.com/google-antigravity/antigravity-cli/"
                "releases/download/" version "/agy_cli_linux_x64.tar.gz"))
          (sha256
-          (base32 "0wwpqxglk055wpmcbhr7dq1wr21fhrbg6p023g6bc5ir3qijc1gd")))))
+          (base32 "0d43saxkfrjrbil5wvp19ls6rdpxyf91skkv05yah6gmznc2qrfz")))))
    (build-system gnu-build-system)
    (native-inputs (list patchelf))
    (inputs (list glibc))
