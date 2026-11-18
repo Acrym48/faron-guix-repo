@@ -15,7 +15,7 @@
   (string-prefix? "aarch64"
                   (or (%current-target-system) (%current-system))))
 
-(define %opencode-version "2.2.1")
+(define %opencode-version "2.3.2")
 (define %claude-code-version "2.1.312")
 (define %antigravity-version "1.4.10")
 (define %qwen-code-version "0.26.4")
@@ -37,14 +37,14 @@
                "https://registry.npmjs.org/@opencode/cli-linux-arm64/-/"
                "cli-linux-arm64-" version ".tgz"))
          (sha256
-          (base32 "02xjsxzpd9pa78p7dlvp341x4v6g28k9b5lyz5rx239igiki5vic")))
+          (base32 "01lkwshrspvs3x6rmzbgy8bm3wzr6gjql0f5q2w8xbpxkq93gaci")))
         (origin
          (method url-fetch)
          (uri (string-append
                "https://registry.npmjs.org/@opencode/cli-linux-x64-baseline/-/"
                "cli-linux-x64-baseline-" version ".tgz"))
          (sha256
-          (base32 "0b29aqvq3sdf4r201sdvhbb9qn6s3ymyf11dj6lpsgg7yh22p7kq")))))
+          (base32 "1kg54vfqr5wvvh21l4wnp70q02p113ay0xr08i7axp0h2gdxqrz5")))))
    (build-system gnu-build-system)
    (native-inputs (list patchelf))
    (inputs (list bash glibc (list gcc-14 "lib")))
