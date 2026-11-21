@@ -18,7 +18,7 @@
 (define %opencode-version "2.3.2")
 (define %claude-code-version "2.1.330")
 (define %antigravity-version "1.5.14")
-(define %qwen-code-version "0.28.0")
+(define %qwen-code-version "0.28.3")
 (define %kimi-code-version "2.7.2")
 
 ;; Prebuilt glibc binary from the npm registry (opencode.ai install script
@@ -224,14 +224,14 @@ debug, and ship code from the terminal.")
                "https://github.com/QwenLM/qwen-code/releases/download/v"
                version "/qwen-code-linux-arm64.tar.gz"))
          (sha256
-          (base32 "0kdm27kbqqgg9ksi58swnyv2grx0snf3z0cqbq97nfd1wrsq24nj")))
+          (base32 "0f3ydfiqlj6yxavidf9gwzl4i252qzvgk8ad0p0wpjf16bbrp8xy")))
         (origin
          (method url-fetch)
          (uri (string-append
                "https://github.com/QwenLM/qwen-code/releases/download/v"
                version "/qwen-code-linux-x64.tar.gz"))
          (sha256
-          (base32 "1yxb0a9bs3q684kgwj0s3q13rjgzmzjl1x3c058lc47wzyqnxdai")))))
+          (base32 "1bhg7rvyb4mncn2jgnbsxpgfgrxfvc8ng1bvnd78c7fh8w4dan20")))))
    (build-system gnu-build-system)
    (native-inputs (list patchelf))
    (inputs (list glibc (list gcc-14 "lib")))
