@@ -16,7 +16,7 @@
                   (or (%current-target-system) (%current-system))))
 
 (define %opencode-version "2.4.1")
-(define %claude-code-version "2.1.330")
+(define %claude-code-version "2.1.331")
 (define %antigravity-version "1.5.15")
 (define %qwen-code-version "0.28.4")
 (define %kimi-code-version "2.7.3")
@@ -105,7 +105,7 @@ write code in your terminal, IDE, or desktop.")
                version "/linux-arm64/claude"))
          (file-name (string-append "claude-" version))
          (sha256
-          (base32 "0i6lknywp3rxzdq6pd55500lmfggl9lcg5xan5zkcgkqmh6gj5k0")))
+          (base32 "0cax1nnj2p8iv9909ffr9jrrlggfqisv3n3n43s57vgndjkzwniy")))
         (origin
          (method url-fetch)
          (uri (string-append
@@ -113,7 +113,7 @@ write code in your terminal, IDE, or desktop.")
                version "/linux-x64/claude"))
          (file-name (string-append "claude-" version))
          (sha256
-          (base32 "1fwfzrxhrw2smzh9z07d1k9qk76bfk5pmd6bfkzinsjfh6hfm47k")))))
+          (base32 "1c968swwljxpk5i66v743wrgkxrqspr0a09ixhw2psvbyjf8602c")))))
    (build-system gnu-build-system)
    (native-inputs (list patchelf))
    (inputs (list glibc))
