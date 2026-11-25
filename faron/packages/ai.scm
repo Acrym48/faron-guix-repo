@@ -17,7 +17,7 @@
 
 (define %opencode-version "2.4.1")
 (define %claude-code-version "2.1.332")
-(define %antigravity-version "1.5.16")
+(define %antigravity-version "1.5.17")
 (define %qwen-code-version "0.28.4")
 (define %kimi-code-version "2.7.3")
 
@@ -165,14 +165,14 @@ read and edit your code, run commands, and delegate subtasks to subagents.")
                "https://github.com/google-antigravity/antigravity-cli/"
                "releases/download/" version "/agy_cli_linux_arm64.tar.gz"))
          (sha256
-          (base32 "0zjw4ss4r801k7s58s02w6rjvpszdidlmc5d32pm1rc401wyrpkx")))
+          (base32 "01zw9zmavb4xh8vvxdl5z66gv66xs5f232s7v9a2iq76jf2bilnn")))
         (origin
          (method url-fetch)
          (uri (string-append
                "https://github.com/google-antigravity/antigravity-cli/"
                "releases/download/" version "/agy_cli_linux_x64.tar.gz"))
          (sha256
-          (base32 "1g0a15ddlcbkwkxcn6pzp9wbw1pba8k0f893prhimbbbs0sb5nlv")))))
+          (base32 "1kvp20lgbrggr061z24s1ismbh99xrjv7cfg669fb5xfjbsv8133")))))
    (build-system gnu-build-system)
    (native-inputs (list patchelf))
    (inputs (list glibc))
