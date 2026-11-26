@@ -19,7 +19,7 @@
 (define %claude-code-version "2.1.332")
 (define %antigravity-version "1.5.18")
 (define %qwen-code-version "0.28.6")
-(define %kimi-code-version "2.8.0")
+(define %kimi-code-version "2.8.1")
 
 ;; Prebuilt glibc binary from the npm registry (opencode.ai install script
 ;; scheme); ELF interpreter is patched to the glibc loader from the Guix
@@ -297,7 +297,7 @@ with agentic features like auto-memory, skills, subagents and MCP support.")
                version "/kimi-code-linux-arm64"))
          (file-name (string-append "kimi-code-" version))
          (sha256
-          (base32 "08y31ms2vbbc3dvq3kaqqgkxq9my478d5w9vmqil2z6igm09cvgf")))
+          (base32 "05jz2ivgbrnhyyqhgsj41mff67w0r9bd3xvp68nxlpknghypqiks")))
         (origin
          (method url-fetch)
          (uri (string-append
@@ -305,7 +305,7 @@ with agentic features like auto-memory, skills, subagents and MCP support.")
                version "/kimi-code-linux-x64"))
          (file-name (string-append "kimi-code-" version))
          (sha256
-          (base32 "1qp9v9iijimy7yiwp2v41ck83plszbri8l7lw44k50jy71km91d8")))))
+          (base32 "1m1a4jfkdgb1i8qkl286y7lmribf8hcf2g95kfaxd9m4ixwagac8")))))
    (build-system gnu-build-system)
    (native-inputs (list patchelf))
    (inputs (list glibc (list gcc-14 "lib")))
